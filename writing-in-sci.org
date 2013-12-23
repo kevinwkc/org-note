@@ -21,5 +21,5 @@ They agreed that it was true.
 The meeting happened on Monday.
 -> The meeting happened Monday.
 * lecture 1.6 Practicing cutting clutter
-As we can see from Figure 2, if the return kinetic energy is less than 3.2 U_p, there will be two electron trajectories associated with this kinetic energy.
+As we can see from Figure 2, if the return kinetic energy is less than 3.2 U_{p}, there will be two electron trajectories associated with this kinetic energy.
 -> Figure 2 shows that a return kinetic energy less than 3.2 U_{p} yields electron trajectories.
