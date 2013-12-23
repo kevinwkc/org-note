@@ -7,21 +7,22 @@ use verb. instead of noun., noun. can make sentence clunky
    bury the main verb
 * lecture 1.5 Cut the clutter
 ** eliminate negatives
-He did not win the match. \\ 
+He did not win the match. 
 -> He lost the match.
 ** eliminate there are/there is
-The data confirm that there is an association between vegetables and cancer.  \\
--> The data confirm an association between vegetables and cancer. \\
-There are many physicists who like to write. \\
--> Many physicists like to write. \\
+The data confirm that there is an association between vegetables and cancer.  
+-> The data confirm an association between vegetables and cancer. 
+
+There are many physicists who like to write. 
+-> Many physicists like to write. 
 ** omit needless perpositions
-#+BEGIN_VERSE
 i.e "that" and "on" are often superfluous
+
 They agreed that it was true. 
 -> They agreed it was true. 
+
 The meeting happened on Monday.
 -> The meeting happened Monday.
-#+END_VERSE
 * lecture 1.6 Practicing cutting clutter
 As we can see from Figure 2, if the return kinetic energy is less than 3.2 U_{p}, there will be two electron trajectories associated with this kinetic energy.
 
