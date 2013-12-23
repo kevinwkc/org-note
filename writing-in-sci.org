@@ -1,0 +1,23 @@
+* lecture 1.3 Examples of what not to do
+use verb. instead of noun., noun. can make sentence clunky
+* lecture 1.4 Overview, principles of effective writing
+** cut unnecessary words and phrases; learn to part with your words
+** use the active voice(subject + verb + object)
+** write with verbs: use strong verbs, avoid turning verbs into nouns, and don't
+   bury the main verb
+* lecture 1.5 Cut the clutter
+** eliminate negatives
+He did not win the match. ->
+He lost the match.
+** eliminate there are/there is
+The data confirm that there is an association between vegetables and cancer. ->
+The data confirm an association between vegetables and cancer.
+There are many physicists who like to write. ->
+Many physicists like to write.
+** omit needless perpositions
+i.e "that" and "on" are often superfluous
+They agreed that it was true. ->
+They agreed it was true.
+The meeting happened on Monday. ->
+The meeting happened Monday.
+* lecture 1.6 Practicing cutting clutter
