@@ -28,8 +28,9 @@ As we can see from Figure 2, if the return kinetic energy is less than 3.2 U_{p}
 
 -> Figure 2 shows that a return kinetic energy less than 3.2 U_{p} yields electron trajectories.
 * lecture 2.1 Use the active voice
-By applying a high resolution, 90 degree bending magnet downstream of the laser electron interaction region, the spectrum of the electron beams could be observed.
--> We could observe the spectrum of the electron beams by applying a high resolution, 90 degree bending magnet downstream of the laser electron interaction region.
+The activation of Ca++ channels is induced by the depletion of endolasmic reticulum Ca++ stores.
+
+->Depleting Ca++ from the endoplasmic reticulum activates Ca++ channels.
 * lecture 2.2 Is it really OK to use "We" and "I"
 * lecture 2.3 Active voice practice
 * lecture 2.4 Write with verbs
