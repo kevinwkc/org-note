@@ -33,9 +33,13 @@ The activation of Ca++ channels is induced by the depletion of endolasmic reticu
 ->Depleting Ca++ from the endoplasmic reticulum activates Ca++ channels.
 * lecture 2.2 Is it really OK to use "We" and "I"
 It's OK. See example of recommending active voice in style guideline of Science magazine.
+
 http://www.sciencemag.org/site/feature/contribinfo/prep/res/style.xhtml
+
 Another example in Watson and Crick's 1953 paper in Nature:
+
 "We wish to suggest a structure for the salt of D.N.A."
+
 http://www.exploratorium.edu/origins/coldspring/printit.html
 * lecture 2.3 Active voice practice
 * lecture 2.4 Write with verbs
