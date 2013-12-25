@@ -27,3 +27,17 @@ The meeting happened on Monday.
 As we can see from Figure 2, if the return kinetic energy is less than 3.2 U_{p}, there will be two electron trajectories associated with this kinetic energy.
 
 -> Figure 2 shows that a return kinetic energy less than 3.2 U_{p} yields electron trajectories.
+* lecture 2.1 Use the active voice
+By applying a high resolution, 90 degree bending magnet downstream of the laser electron interaction region, the spectrum of the electron beams could be observed.
+-> We could observe the spectrum of the electron beams by applying a high resolution, 90 degree bending magnet downstream of the laser electron interaction region.
+* lecture 2.2 Is it really OK to use "We" and "I"
+* lecture 2.3 Active voice practice
+* lecture 2.4 Write with verbs
+* lecture 2.5 Practice examples
+* lecture 2.6 A few grammar tips
+* lecture 3.1 Experiment with punctuation
+* lecture 3.2 Practice, colon, and dash
+* lecture 3.3 Parallelism
+* lecture 3.4 Paragraphs
+* lecture 3.5 More paragraph practice
+* lecture 3.6 A few more tips
