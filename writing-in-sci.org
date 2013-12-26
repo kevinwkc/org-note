@@ -41,8 +41,14 @@ Another example in Watson and Crick's 1953 paper in Nature:
 "We wish to suggest a structure for the salt of D.N.A. ..."
 
 http://www.exploratorium.edu/origins/coldspring/printit.html
-* lecture 2.3 Active voice practice
 * lecture 2.4 Write with verbs
+** use strong verbs
+use "to be" verbs purposefully and sparingly.
+** don't turn verb into noun
+** don't bury the main verb
+One study of 930 adults with multiple sclerosis (MS) receiving care in one of two managed care settings or in a fee-for-service setting found that only two-thirds of those needing to contact a neurologist for an MS-related problem in the prior 6 months had done so (Vickrey et al 1999).
+
+-> One study found that, of 930 adults with multiple sclerosis (MS) who were receiving care in one of two managed care settings or in a fee-for-service setting, only two-thirds of those needing to contact a neurologist for an MS-related problem in the prior six months had done so (Vickrey et al 1999).
 * lecture 2.5 Practice examples
 * lecture 2.6 A few grammar tips
 * lecture 3.1 Experiment with punctuation
