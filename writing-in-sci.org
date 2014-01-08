@@ -50,7 +50,36 @@ One study of 930 adults with multiple sclerosis (MS) receiving care in one of tw
 
 -> One study found that, of 930 adults with multiple sclerosis (MS) who were receiving care in one of two managed care settings or in a fee-for-service setting, only two-thirds of those needing to contact a neurologist for an MS-related problem in the prior six months had done so (Vickrey et al 1999).
 * lecture 2.5 Practice examples
+"The fear expressed by some teachers that students would not learn statistics well if they were permitted to use canned computer programs has not been realized in our experience. A careful monitoring of achievement levels before and after the introduction of computers in the teaching of our course revealed no appreciable change in students' performance."
+
+-> Many teachers feared that the use of canned computer programs would prevent students from learning statistics. We monitored student achievement levels before and after the introduction of computers in our course and found no detriments in performance.
+
+"Review of each center's progress in recruitment is important to ensure that the cost involved in maintaining each center's participation is worthwhile."
+
+-> We should review each center's recruitment progress to make sure its continued participation is cost-effective.
+
+It should be emphasized that these proportions generally are not the result of significant increases in moderate and severe injuries, but in many instances reflect mildly injured persons not being seen at a hospital.
+
+-> Shifting proportions in injury severity may reflect stricter hospital admission criteria rather than true increases in moderate and severe injuries.
+
+Important studies to examine the descriptive epidemiology of autism, including the prevalence and changes in the characteristics of the population over time, have begun.
+
+-> Studies have begun to describe the epidemiology of autism, including recent changes in the disorder's prevalence and characteristics.
+
+There are multiple other mechanisms that are important, but most of them are suspected to only have a small impact or are only important because of impact on one of the three primary mechanisms.
+
+-> Multiple other mechanisms play only a small role or work by impacting one of the three primary mechanisms.
+
+After rejecting paths with poor signal-to-noise ratios, we were left with 678 velocity measurements of waves with 7.5 seconds peroid and 891 measurements of 15 second waves.
+
+-> Rejecting paths with poor signal-to-noise ratios left 678 velocity measurements of 7.5-second waves and 891 of 15-second waves.
+
+It is suspected that the importance of temperature has more to do with impacting rates of other reactions than being a mechanism of disinfection itself since ponds are rarely hot enough for temperature alone to cause disinfection.
+
+-> Ponds are rarely hot enough for temperature alone to cause disinfection; thus, the effect of temperature is likely mediated through its impact on the rates of other reactions. 
 * lecture 2.6 A few grammar tips
+** That vs. which
+
 * lecture 3.1 Experiment with punctuation
 * lecture 3.2 Practice, colon, and dash
 * lecture 3.3 Parallelism
