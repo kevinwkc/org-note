@@ -87,7 +87,9 @@ compare with ** (used more often in science)
 = to point out differences between similar things
 ** That vs. which
 "That" is the restrictive (defining) pronoun
+
 "Which" is the nonrestrictive (non-defining) pronoun
+
 key: essential (to the sentence) or not
 * lecture 3.1 Experiment with punctuation
 * lecture 3.2 Practice, colon, and dash
