@@ -78,8 +78,17 @@ It is suspected that the importance of temperature has more to do with impacting
 
 -> Ponds are rarely hot enough for temperature alone to cause disinfection; thus, the effect of temperature is likely mediated through its impact on the rates of other reactions. 
 * lecture 2.6 A few grammar tips
+** "Data are" not "Dota is" 
+ex. These data show an unusual trend.
+    The data are critical.
+** Compared to vs. compared with
+compare to = to point out similarities between different things
+compare with ** (used more often in science)
+= to point out differences between similar things
 ** That vs. which
-
+"That" is the restrictive (defining) pronoun
+"Which" is the nonrestrictive (non-defining) pronoun
+key: essential (to the sentence) or not
 * lecture 3.1 Experiment with punctuation
 * lecture 3.2 Practice, colon, and dash
 * lecture 3.3 Parallelism
