@@ -80,10 +80,13 @@ It is suspected that the importance of temperature has more to do with impacting
 * lecture 2.6 A few grammar tips
 ** "Data are" not "Dota is" 
 ex. These data show an unusual trend.
+
     The data are critical.
 ** Compared to vs. compared with
 compare to = to point out similarities between different things
+
 compare with ** (used more often in science)
+
 = to point out differences between similar things
 ** That vs. which
 "That" is the restrictive (defining) pronoun
