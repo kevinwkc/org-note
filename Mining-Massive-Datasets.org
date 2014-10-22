@@ -1,0 +1,29 @@
+** Improbements to A-Priori
+*** PCY Alogrithm (Park-Chen-Yu-Algorithm)
+  1st pass: hash p
+  2nd pass:
+*** Multistage
+  two hash tables, 2 bitmaps, 3 passes.
+important points
+  The hash functions have to be independent.
+  We need to check both hashes on the third pass. Otherwise we will count pairs(freq item, freq item) hashTo [infreq bucket] hashTo [freq bucket].
+*** Multihash
+  Key idea: use multiple independent hash tables in 1st pass.
+*** Single-Pass Approximate Algorithms
+** All (Or Most) Frequent Itemsets In \leq 2 Passes
+*** Simple Algorithm
+  Take a random sample of the market baskets.
+*** Savasere-Omiecinski-Navathe (SON) Algorithm
+  Only work if the number of candidates can be counted in the main memory
+  Subset
+  Key "monotonicity"
+*** Toivonen's Algorithm
+  no false negative, in some case it may not give an answer, so you need to rerun it. No gurantee for finishing.
+  Start as in the simple algorithm, but lower the threshold slightly.
+  Goal is to
+  
+Negative Border
+{A, B, C, D}
+
+
+
