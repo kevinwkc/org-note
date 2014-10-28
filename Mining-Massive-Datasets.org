@@ -10,7 +10,7 @@ important points
 *** Multihash
   Key idea: use multiple independent hash tables in 1st pass.
 *** Single-Pass Approximate Algorithms
-** All (Or Most) Frequent Itemsets In $\leq$ 2 Passes
+** All (Or Most) Frequent Itemsets In \leq 2 Passes
 *** Simple Algorithm
   Take a random sample of the market baskets.
 *** Savasere-Omiecinski-Navathe (SON) Algorithm
@@ -24,6 +24,95 @@ important points
   
 Negative Border
 {A, B, C, D}
+
+
+
+* Week 3
+** The Affiliation Grpah Model
+*** Community-Affiliation Graph
+Community, C
+Memberships, M
+Nodes, V
+AGM -> Graph
+\( P(u, v) = 1 - \prod\limits_{c\in M_u \cap M_v}(1-p_c) \)
+*** AGM: Flexibility
+can express a variety of community stuctures:
+Non-overlapping, Overlapping, Nested
+** From AGM to BigCLAM
+F_{uA} The membership strength of node $u$
+Each community $A$ links nodes independently:
+\( P_A(u, V) = 1 - exp(-F_{uA}\cdot F_{vA})  \)
+*** community membership strength Factor Matrix F
+\( P(u,v) = 1 - \prod\limits_c (1-p_c(u,v)) \)
+Then prob. at least one common $C$ links them:
+\begin{align*}
+P(u,v) &= 1 - exp(-\sum_C F_{uC}\cdot F_{vC})   \\
+       &= 1 - exp(-F_u\cdot F_v^{T})
+\end{align*}
+** Solving the BigCLAM
+*** How to find F
+Given a Network G(V,E), estimate F
+\( arg max_F \prod p(u,v) \prod (1-p(u,v)) \)
+take the log likelihood $l(F_u)$
+\begin{equation*}
+l(F_u) = \sum\limits_{v\in N(u)} log(1-exp(-F_uF_v^T)) - \sum\limits_{v\not \in N(u)}(F_u F_V^T)
+\end{equation*}
+*** BigCLAM: V1.0
+gradient descent
+slow because \( \bigtriangledown l(F_u) \) takes linear time
+*** BigCLAM: V2.0
+\( \sum\limits_{v\not \in N(u)} F_v = (\sum\limits_v F_v - F_u - \sum\limits_{v\in N(u)} F_v)  \)
+We cache \( sum_{v\not \in N(u)} F_v \) 
+now it takes linear time in the degree $|N(u)|$ of $u$
+** Mining Data Streams
+*** The Stream Model
+Data Management VS Steam Management
+DBMS e.p. SQL internel insert
+Stream Management is import when the input rate is controlled externally e.g. Google query
+**** Two Forms of Query
+Ad-hoc queries
+Standing queries
+query once, active all the time
+e.g. Report each new max value ever seen in stream S
+archive streams, if working storage is limited
+**** Applications
+Mining query streams
+Mining click streams
+IP packets can be monitored at a switch
+*** Sliding Windows
+queries are about a window of length N
+what if N > main memory
+E.G. Averages
+Stream of integers
+Standing query: what is the average of the integers in the window(size N)?
+For the first N inputs, simply sum and count the average
+Afterward, when a new input $i$ arrives, change the average by adding $(i-j)/N$
+*** Counting 1's
+** More Stream Mining
+entire stream
+** Bloom Filters
+Bloom Filters can have false positive
+A Bloom filter is an array of bits, together with a number of hash functions
+The argument of each hash function is a stream element, and it returns a position in the array.
+E.G. Bloom Filter
+Use N = 11 bits for our filter
+Stream elements = integers
+Use two hash functions:
+h_1(x) = odd numbered bits
+h_2(x) = the same, but takes even numbered bits
+Bloom Filter Lookup
+compute h(y) for each hash function y.
+if all resulting in 1
+** Sampling Streams
+*** When Sampling Doesn't Work
+Google find unique query for the past month
+*** Smapling Based on Hash Value
+E.G.: Fixed Sample Size
+Sampling Key-Value Pairs
+*** Counting Distinct Items
+*** Computing Moments
+
+
 
 
 
