@@ -10,7 +10,7 @@ important points
 *** Multihash
   Key idea: use multiple independent hash tables in 1st pass.
 *** Single-Pass Approximate Algorithms
-** All (Or Most) Frequent Itemsets In \leq 2 Passes
+** All (Or Most) Frequent Itemsets In $\leq$ 2 Passes
 *** Simple Algorithm
   Take a random sample of the market baskets.
 *** Savasere-Omiecinski-Navathe (SON) Algorithm
