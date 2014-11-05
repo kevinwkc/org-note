@@ -64,6 +64,48 @@ slow because \( \bigtriangledown l(F_u) \) takes linear time
 \( \sum\limits_{v\not \in N(u)} F_v = (\sum\limits_v F_v - F_u - \sum\limits_{v\in N(u)} F_v)  \)
 We cache \( sum_{v\not \in N(u)} F_v \) 
 now it takes linear time in the degree $|N(u)|$ of $u$
+** Detecting Clusters 
+Goal: find densely linked clusters
+Discovering social circles, circles of trust
+Graph Partitioning Criteria: Conductance
+$\phi(A) = \cfrac{CUT(A)}{VOL(A)}$
+vol(A): total weight of the edges with at least one endpoint in A: vol(A) = \sum\limits_{i\in A}d_i
+Why use this criteria?
+Produces more balanced partitions.
+** The Graph Laplacian Matrix
+Adjacency matrix
+Graph Partitioning
+Task: Partition the graph into two pieces such the resulting pieces have low conductance.
+Problem: Computing optimal cut is NP-hard.
+$A$: adjacency matrix of undirected G
+  A_{ij} = 1 if (i, j) is an edge, else 0
+$x$ is a vector of label/value of each node of $G$
+A\cdot x
+(1) L = D - A
+(2) \lambda_2 = \cfrac{x^T Lx}{x^T x}
+(2) can be derived from (1).
+min f(y) = sum (y_i - y_j)^2 = y^T Ly
+Fiedler vector
+** Spectral Clustering Alogirthms
+Three basic stages:
+1) Pre-processing
+Construct a matrix representation of the graph
+2) Decomposition
+Compute eigenvalues and eigenvectors of the matrix
+Map each point to a lower-dimensional representation based on one or more eigenvectors
+3) Grouping
+Assign points to two or more clusters, based on the new representation
+
+K-way Sepectral Clustering
+Recursive bi-partitioning ('92)  Disadvantages: inefficient, unstable
+Cluster multiple eigenvectors ('00 preferable)
+** Trawling
+Searching for small communities in the Web graph
+Frequent itemsets = complete bipartite graphs!
+view each mode i as a set Si of nodes i points to
+K_{s,t} = a set Y of size t that occurs in s sets S_i
+s ... minimum support (|S| = s)
+t ... itemset size (|Y| = t)
 ** Mining Data Streams
 *** The Stream Model
 Data Management VS Steam Management
@@ -88,8 +130,6 @@ Standing query: what is the average of the integers in the window(size N)?
 For the first N inputs, simply sum and count the average
 Afterward, when a new input $i$ arrives, change the average by adding $(i-j)/N$
 *** Counting 1's
-** More Stream Mining
-entire stream
 ** Bloom Filters
 Bloom Filters can have false positive
 A Bloom filter is an array of bits, together with a number of hash functions
@@ -103,6 +143,34 @@ h_2(x) = the same, but takes even numbered bits
 Bloom Filter Lookup
 compute h(y) for each hash function y.
 if all resulting in 1
+** Counting 1's
+Counting Bits
+Problem: given a stream of 0's and 1's, be prepared to answer queries of the form "how many 1's in the last k bits?" where k $\leq$ N
+
+*** DGIM Algorithm
+O(log^2 N bits per stream)
+**** Timestamps
+Each bit in the stream has a timestamp, starting 0, 1, ...
+Record timestamps modulo N(the window size), so we can represent any relevant timestamp in O(log2N) bits.
+**** Buckets
+A bucket is a segment of the window; it is represented by a record consisting of:
+1.  The timestamp of its end [O(log N) bits]
+2. The number of 1's between its beginning and its beginning and end [O(log log N) bits].
+**** Representing a Stream by Buckets
+Either one 
+Bucket do not overlap
+Buckets are sorted by size
+Buckets disappear when their end time > N
+**** Updating Buckets
+When a new bit comes in, drop the oldest bucket if its end-time is prior to N time units before the cur time
+If the current bit is 0, no other changes
+If the current bit is 1:
+1. Create a new bucket of size 1, for just this bit.
+    End timestamp = current time.
+2. If there are now three buckets of size 1, combine the oldest two into a bucket of size 2
+3. If there are now three buckets of size 2, ...
+so on ...
+
 ** Sampling Streams
 *** When Sampling Doesn't Work
 Google find unique query for the past month
@@ -111,8 +179,195 @@ E.G.: Fixed Sample Size
 Sampling Key-Value Pairs
 *** Counting Distinct Items
 *** Computing Moments
+** Counting Distinct Elements
+Problem: a data stream consists of elements chosen from a set of size n. Maintain a count of the number of distinct elements seen so far.
+Applications
+How many different words are founc among the web pages being crawled at a site?
+How many unique users visited Facebook the past month?
+*** Estimating Counts
+Flajolet-Martin Approach
+Pick a hash function h that maps each of the n elements to at least log2n bits.
+For each stream element a, let r(a) be the number of trailing 0's in h(a) 
+Record R = the maximum r(a) seen
+Estimate = 2^R
+**** Why it works
+The probability that a given h(a) ends in at least i 0's is 2^{-i}
+If there are m different elements, the probability that R \geq i is 1-(1-2^{-i})^m
+Since 2^{-i} is small, 1-(1-2^{-i})^m = 1 - e^{-m2^{-i}}
+**** Solution
+Partition your samples into small groups.
+Log n, where n = size of universal set, suffices
+Take the average of groups
+Then take the median of the averages
+**** Generalization: Moments
+AMS
+Expected Value of X
+2^{nd} moment is \sum_a(m_a)^2
+E(X) = (1/n)(\sum_{all times t} n * (twice the number of times the stream element at time t appears from that time on)-1))
+     = \sum_a(1+3+5+\ldots + 2m_a-1)
+Problem: Streams never end
+Fixups
+
+h(1) 3+7=10 1010 =1
+h(9) 3*9+7=34%11=3 0011 = 0
+h(8) 31%11=9 1001 = 0
+h(5) 22 = 0 0000 = 4
+h(2) 2 0010 = 1
+h(6) 25%11=3 0011 = 0
+h(3) 16%11=5 0101 = 0
+h(4) 19%11=8 1000 = 3
+h(7) 28%11=6 0110 = 1
+h(10) 37%11=4 
 
 
 
+* Week 4 Recommender System
+** overview
+long tail
+*** Types of Recommendations
+Editorial and hand curated
+Simple aggregates
+top 10, most popular, recent uploads
+Tailored to individual users
+*** Formal Model
+C = set of Customers
+S = set of Items
+Utility function u: C\times S \rightarrow R
+R = set of ratings
+R is a totally ordered set
+*** Key Problems
+**** Gathering Known Ratings
+implicit: purchase means high ratings
+**** Extrapolating Utilities
+Key problem: matrix U is sparse
+Cold start:
+New items have no ratings
+New items have no history
+Three approaches to recommender systems
+Content-based
+Collaborative
+Latent factor based
+** Content-based 
+Main idea: Recommand items to customer x similar to previous items rated highly by x
+Users like \rightarrow Item profiles \rightarrow User profile
+*** Item Profiles
+For each item, create an item profile
+Profile is a set of features (a vector)
+Text features
+Profile = set of "important" words in item (document)
+How to pick important words?
+TF-IDF
+*** User Profiles
+User has rated items with profiles i_1, \ldots, i_n
+Simple: (weighted) average of rated item profiles
+Variant: Normalize weights using average rating of user
+**** Example 1: Boolean Utility Matrix
+Items are movies, only feature is "Actor"
+Suppose users x has watch 5 movies
+2 movies featuring actor A
+3 movies featuring actor B
+User Profile
+A rating = 0.4
+B rating = 0.6
+**** Example 2: Star Ratings
+Same example, 1-5 star ratings
+Actor A's movies rated 3, 5
+Actor B's movies rated 1, 2, 4
+Useful step: Normalize ratings by subtracting user's mean rating(3)
+*** Making predictions
+User profile x, Item profile i
+Estimate U(x, i) = cos(\theta) = (x \cdot i) / (|x||i|)
+cosine distance
+*** Pros: Content-based Approach
+No need for data on other users
+Able to recommend to users with unique tastes
+Able to recommend new & unpopular items
+  No first-rater problem
+Explanations for recommended items
+  Content features that caused an item to be recommended
+*** Cons: Content-based Approach
+Finding the appropriate features is hard
+Overspecialization
+ Never recommends items outside user's content profile
+ People might have multiple interests
+ Unable to exploit quality judgments of other users
+Cold-start problem for new users
+ How to build a user profile?
+** Collaborative Filtering
+Consider user x
+Find set N of other users whose ratings are "similar" to x's ratings
+Estimate x's ratings based on ratings of users in N
 
+Option 1 : Jaccard Similarity
+sim(A,B) = |r_A\cap r_B|/|r_A\cup r_B|
+Problem: Ignores rating values
+Option 2: Cosine similarity
+sim(A,B) = cos(r_A, r_B)
+Problem: treat missing data as negtive
+Option 3: Centered cosine
+Normalize ratings by subtracting row mean
+Also known as Pearson Correlation
+*** Rating Predictions
+Let r_x be the vector of user x's ratings
+Let N be the set of k users most similar to x who have also rated item i
+Prediction for user x and item i
+Option 1: r_{xi} = 1/k \sum_{y\in N} r_{yi}
+Option 2: r_{xi} = \sum_{y\in N} s_{xy}r_{yi}/sum_{y\in N} s_{xy}
+where s_{xy} is the similarity between x and y
+*** Item-Item Collaborative Filtering
+Estimate rating for item i based on ratings for similar items
+r_{xi} = \cfrac{\sum_{j\in N(i;x)s_{ij}*r_{ij}}}{\sum_{j\in N(i;x)}s_{ij}}
+*** Item-Item v. User-User
+In theory, user-user and item-item are dual approaches
+In practice, item-item outperforms user-user in many user cases
+Item are "simpler" than users
+  Items belong to a small set of "genres", users have varied tastes
+  Item Similarity is more meaningful than user Similarity
+** Evaluating Recommender System
+Root-mean-square erroe (RMSE)
+Problems:
+Narrow focus on accuracy sometimes misses the point
+  Prediction Diversity
+  Prediction Context
+  Order of predictions
+In practice, we care only to predict high ratings
+  Alternative: precision at top k
+** Latent Factor Models
+*** A Modern Recommender System
+Multi-scale modeling of the data
+Global
+  overall deviation
+Factorization
+  addressing "regional" effects
+Collaborative filtering
+  extract local patterns
+*** Modeling Local & Global Effects
+Global:
+Baseline estimation
+Local neighborhood (CF/NN):
+Final estimate
+
+*** Collaborative filtering (Item-Item)
+In practice we get better estimates if we model deviations:
+b_{xi} = \mu + b_x + b_i
+r_{xi} = b_{xi} + \frac{\sum s_{ij}(r_{xj}-b_{xj})}{\sum s_{ij}}
+\mu = overall mean rating
+b_x = rating deviation of user x
+b_i = (avg. rating of movie i) - mu
+Problems/Issues:
+Similarity measures are "arbitrary"
+Pairwise similarities neglect interdependencies among users
+Taking a weight average can be restricting
+** Latent Factor Recommender System
+Recommendations via Optimization
+*** Latent Factor Models
+"SVD" on Netflix data: R \approx Q\cdot P^T
+SVD gives minimum reconstruction error (Sum of squared errors)
+** Finding the Latent Factors
+** CUR
+Pros & Cons
++Easy interpretation
++Sparse basis
+-Duplicate columns and rows
+  columns of large norms will be sampled many times
 
