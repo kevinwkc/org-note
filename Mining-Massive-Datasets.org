@@ -1,4 +1,4 @@
-** Improbements to A-Priori
+** Improvements to A-Priori
 *** PCY Alogrithm (Park-Chen-Yu-Algorithm)
   1st pass: hash p
   2nd pass:
