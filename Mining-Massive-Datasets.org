@@ -371,3 +371,154 @@ Pros & Cons
 -Duplicate columns and rows
   columns of large norms will be sampled many times
 
+* Week 5 Clustering
+** Bradley-Fayyad-Reina (BFR) Algorithm
+BFR is a variant of k-means for very large (disk-resident) data sets
+Assumes each cluster is normally distributed around a centroid in Euclidean space
+*** BFR Algorithm
+Points are read from disk one main-memory-full at a time
+Most points from previous memory are summarized by simple statistics
+To begin, from the initial load we select the initial k centroid 
+*** Three Classes of Points
+Discard set (DS):
+Points close enough to a centroid to be summarized
+Compression set (CS):
+Groups of points that are close together but not close to any existing centroid
+These points are summarized, but not assigned to a cluster
+Retained set (RS):
+isolated points waiting to be assigned to a compression set
+*** Summarizing Sets of Points
+For each cluster, DS is summarized by:
+The number of points, N
+The vector SUM, whose i^{th} component = sum of the coordinates of the points in i^{th} dimension
+The vector SUMSQ: i^{th} component = sum of squares of coordinates in i^{th} dimension
+centroid and variance can be calculated by N, SUM and SUMSQ
+*** Processing a chuck of points
+Consider merging compressed sets in the CS
+If this is the last round, merge all compressed sets in the CS and all RS points into their nearest cluster
+*** A Few Details...
+Q1) How do we decide if a point is "close enough" to a cluster (and discard
+BFR approach
+The Mahalanobis distance is less than a threshold
+High likelihood of the point belonging to currently 
+3 \sigma
+Q2) Should 2 CS subclusters be combined?
+Combine if the combined variance is below some threshold
+Many alternatives: Treat dimensions differently, consider density
+** CURE Algorithm
+Limitations of BFR Algorithm
+Makes strong assumptions, not work on non-linear separable
+*** Clustering Using REpresentatives:
+Assumes a Euclidean distance
+Allows clusters to assume any shape
+Uses a collection of representative points to represent cluster
+*** Starting CURE
+Pass 1 of 2:
+Pick a random sample of points that fit in main memory
+Cluster sample points hierarchically to create the initial clusters
+Pick representative points:
+For each cluster, pick k representative points, as dispersed as possible
+Move each representative point a fixed fraction (e.g., 20%) toward the centroid of the cluster
+Pass 2 of 2:
+Now, rescan the whole dataset and visit each point p in the data set
+Place it in the "closest cluster"
+** Performance-based Advertising
+Matching Algorithm
+Problem: Find a maximum matching for a given bipartite graph
+A perfect one if exists
+There is a polynomial-time offline algorithm based on augmenting paths
+Online Graph Matching Problem
+girls -> boys
+In each round, one girl's choices are revealed
+At that time, we have decide to either pair them.
+Example of application: Assigning tasks to servers.
+*** Greedy Algorithm
+just pick a boy eligible for a new girl
+Competitive Ration
+= min_{all possible inputs I}(|M_{greedy}|/|M_{opt}|)
+the worst case performance overall all possible inputs of greedy algorithm
+*** Analyzing the Greedy Algorithm
+|M_{opt}| <= 2|M_{greedy}|
+** Algorithmic Challenges
+Performance-based advertising works!
+  Multi-billion-dollar industry
+What ads to show for a given query?
+*** AdWords Problems
+A stream of queries arrives at the search engine: q_1,q_2,...
+Several advertisers bid on each query
+When query q_i arrives, search engine must pick a subset of advertisers whose ads are shown
+Goal: Maximize serach engine's revenues
+Clearly we need an online algorithm!
+*** Expected Revenue
+CTR (click through rate) * Bid
+*** Adwords Problem
+Given:
+A set of bids by advertisers for search queries
+A click-through rate for each advertiser-query pair
+A budget for each advertiser (say for 1day, month...)
+A limit on the number of ads to be displayed with each search query
+Respond to each search query with a set of advertisers such that:
+The size of the set is no larger than limitation
+Each advertiser has bid on the serach query
+Each advertiser has enough budget left to pay
+*** Limitations of Simple Algorithm
+CTR of an ad is unknown
+Advertisers have limited budgets and bid on multiple ads (BALANCE algorithm)
+*** Estimating CTR
+CTR for a query-ad pair is measured historically
+Averaged over a time peroid
+Some complications we won't cover in this lecture:
+CTR is position dependent
+Explore v Exploit: Keep showing ads we already know the CTR of, or show new ads to estimate their CTR?
+** The BALANCE Algorithms
+*** Dealing with Limited Budgets
+Simplest algorithm is greedy.
+*** Bad Scenario for Greedy
+Two advertisers A and B
+A bids on query x, B bids on x and y
+Both have budgets of $4
+Query stream: x x x x y y y y
+  worst case greedy choice: B B B B _ _ _ _
+Optimal: A A A A B B B B
+This is the worst case! And it's determinstic. Greedy always give the same answer to the same situation.
+*** BALANCE Algorithm [MSVV]
+For each query, pick the advertiser with the largest unspent budget
+Break ties arbitrarily (but in a determinstic way)
+*** Analyzing 2-advertiser BALANCE
+BALANCE must exhaust at least one advertiser's budget:
+  if not, we can allocate more queries
+  Assume BALANCE exhausts A_2's budget
+*** BALANCE: General Result
+In the general case, worst competitive ration of BALANCE is 1-1/e = approx. 0.63
+   Interestingly, no online algorithm has a better competitive ratio
+** Worst case for BALANCE
+N advertisers: A_1, A_2, ... A_N
+Queries:
+N\cdot B queries appear in N rounds of B queries each
+Bidding:
+Round 1 queries: bidders A_1, A_2, ..., A_N
+Round 2 queries: bidders      A_2, ..., A_N
+Round i queries: bidders      A_i, ..., A_N
+*** BALANCE Allocation
+After k rounds, the allocation to advertiser k is:
+S_K = \sum_{1\leq i \leq k} B/(N-i+1)
+*** BALANCE: Analysis
+Fact: for large n
+Result due to Euler
+ln(N) - 1 = ln(N - k)
+k = N(1 - 1/e)
+So after the first k = N(1-1/e) rounds, we cannot allocate a query to any advertiser
+Revenue = B\cdot N(1-1/e)
+Competitive ratio = 1 - 1/e
+*** General Version of the Problem
+So far: all bids = 1, all budgets equal (=B)
+In a general setting BALANCE can be terrible
+*** Generalized BALANCE
+Consider query q, bidder i
+Bid = x_i
+Budget = b_i
+Amount spent so far = m_i
+Fraction of budget left over f_i = 1 - m_i/b_i
+Define \phi_i(q) = x_i(1-e^{-f_i})
+Allocate query q to bidder i with largest value of \phi_i(q)
+Same competitive ratio (1 - 1/e)
