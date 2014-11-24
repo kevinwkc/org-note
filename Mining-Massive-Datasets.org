@@ -494,7 +494,7 @@ In the general case, worst competitive ration of BALANCE is 1-1/e = approx. 0.63
 ** Worst case for BALANCE
 N advertisers: A_1, A_2, ... A_N
 Queries:
-N\cdot B queries appear in N rounds of B queries each
+N\( \cdot \) B queries appear in N rounds of B queries each
 Bidding:
 Round 1 queries: bidders A_1, A_2, ..., A_N
 Round 2 queries: bidders      A_2, ..., A_N
@@ -522,3 +522,8 @@ Fraction of budget left over f_i = 1 - m_i/b_i
 Define \phi_i(q) = x_i(1-e^{-f_i})
 Allocate query q to bidder i with largest value of \phi_i(q)
 Same competitive ratio (1 - 1/e)
+* week 6
+** Soft-Margin SVMs
+Hinge Loss
+* week 7
+
