@@ -526,4 +526,116 @@ Same competitive ratio (1 - 1/e)
 ** Soft-Margin SVMs
 Hinge Loss
 * week 7
+** LSH Families of Hash Functions
+*** Hash Functions Decide Equality
+There is a subtlety about what a "hash function" really is in the context of LSH family.
+A hash function h really takes two elements x and y, and returns a decision whether x and y are candidates for comparison.
+E.g.: the family of minhash functions computes minhash values and says "yes" iff they are the same.
+Shorthand: "h(x) = h(y)" means h says "yes" for pair elements x and y
+*** LSH Families Defined
+Suppose we have a space S of points with a distance measure d.
+A family H of hash functions is said to be (d_1, d_2, p_1, p_2)-sensitive if for any x and y in S:
+1. If \( d(x,y) \leq d_1 \), then the probability over all h in H, that h(x) = h(y) is at least p_1.
+2. If \( d(x,y) \geq d_2 \), then the probability over all h in H, that h(x) = h(y) is at most p_2.
+*** E.g.: LS Family
+Let S = sets, d = Jaccard distance, H is formed from the minhash functions for all permuatations.
+Then Prob[h(x)=h(y)] = 1 - d(x,y).
+  Restates theorem about Jaccard similarity and minhashing in terms of Jaccard distance.
+Claim: H is a (1/3, 2/3, 2/3, 1/3)-sensitive family for S and d.
+*** Amplifying a LSH-Family
+The "bands" technique we learned for signature matrices carries over to this more general setting.
+  Goal: the "S-curve" effect seen here.
+AND construction like "rows in a band."
+OR construction like "many bands."
+*** AND of Hash Functions
+Given family H, construct family H' whose members each consist of r functions from H.
+For \( h = {h_1, \ldots, h_r} \) in H', h(x) = h(y) iff h_i(x) = h_i(y) for all i.
+Theorem: If H is (d_1, d_2, p_1, p_2)-sensitive, then H' is (d_1, d_2, (p_1)^r, (p_2)^r)-sensitive.
+  Proof: Use fact that h_i's are independent.
+*** OR of Hash Functions
+Given family H, construct family H' whose members each consist of b functions from H.
+For \( h = {h_1, \ldots, h_b} \) in H', h(x) = h(y) iff h_i(x) = h_i(y) for some i.
+Theorem: If H is (d_i, d_2, p_1, p_2)-sensitive, then H' is (d_1, d_2, 1- (1-p_1)^b, (1-p_2)^b)-sensitive.
+*** Effect of AND and OR Constructions
+AND makes all probabilities shrink, but by choosing r conrrectly, we can make the lower probablity approach 0 while the higher does not.
+OR makes all probabilities grow, but by choosing b correctly, we can make the upper probability approach 1 while the lower does not.
+*** Composing Constructions
+As for the signature matrix, we can use the AND construction followed by the OR construction.
+  Or vice-versa.
+  Or any sequence of AND's and OR's alternating.
+*** AND-OR Composition
+Each of the two probabilities p is transformed into 1-(1-p^r)^b.
+  The "S-curve" studied before.
+E.g.: Take H and construct H' by the AND construction with r=4. Then, from H', construct H'' by the OR construction with b=4. (1-(1-p^4)^4)
+*** OR-AND Composition
+Each of the two probabilities p is transformed 1-(1-p^b)^r
+  The same S-curve, mirrored horizontally and vertically.
+*** Cascading Constructions
+E.g.: Apply the (4-4) OR-AND construction followed by the (4,4) AND-OR construction.
+Transfrom a (.2,.2,.8,.8)-sensitive into (.2,.8,.9999996,.0008715)-sensitive
+*** General Use of S-Curves
+For each S-curve 1-(1-p^r)^b, there is a threshold t, for which 1-(1-t^r)^b = t.
+Above t, high probabilities are increased; below t, they are decreased.
+You improve the sensitivity as long as the low probability is less than t, and the high probability is gerater thant.
+  Iteratea as you like.
+** More LSH Families
+For cosine distance, there is a technique analogous to minhashing for generating a (d_1,d_2,(1-d_1/180),(1-d_2/180))-sensitive family for andy d_1 and d_2
+Called random hyperplane.
+*** Random Hyperplanes
+Each vector v determines a hash function h_v with two buckets.
+h_v(x) = +1 if \( v \cdot x > 0 \); = -1 if \( v \cdot x < 0 \)
+LS-family H = set of all functions derived from any vector.
+Clain: Prob[h(x)=h(y)] = 1 - (angle between x and y divided by 180)
+*** Signatures for Cosine Distance
+Pick some number of vectors, and hash your data for each vector.
+The result is a signature(sketch) of +1's and -1's that can be used for LSH lke the minhash signatures for Jaccard distance.
+But you don't have to think this way.
+The existence of the LSH-family is sufficient amplification by AND/OR.
+*** Simplification
+We need not pick from among all possible vectors v to form a component of a sketch.
+It suffices to consider only vector v consisting of +1 and -1 components.
+*** LSH for Euclidean Distance
+Simple idea: hash functions correspond to lines.
+Partition the line into buckets of size a.
+Hash each point to the bucket containig its projection onto the line.
+Nearby points are always close; distant points are rarely in same bucket.
 
+If points are distance \( \geq 2a \) apart then \( 60 \leq \theta \leq 90 \) for there to be a chance that the points go in the same bucket.
+I.e., at most 1/3 probability
+If points are distance \( \leq a/2 \), then there is at least 1/2 chance they share a bucket.
+Yields a (a/2, 2a, 1/2, 1/3)-sensitive family of hash functions.
+*** Fixup: Euclidean Distance
+For previous distance measures, we could start with a (d,e,p,q)-sensitive family for any d < e, and drive p and q to 1 and 0 by AND\OR constructions.
+Here, we seem to need \( e \geq 4d \).
+But as long as d < e, the probability of points at distance d falling in the same bucket is greater than the probability of points at distance e doing so.
+Thus, the hash familiy formed by projecting onto lines is a (d,e,p,q)-sensitive family for some p > q.
+** Topic Specific (aka Personalized) PageRank
+Instead of generic popularity, can we measure popularity within a topic?
+Goal: Evaluate Web pages not just according to their popularity, but by how cloase theay are to a particular topic, e.g. "sports" or "history".
+Allow search queries to be answered based on interests of the user.
+  E.g.:Query "Trojan" wants different pages depending on whether you are interested on sports, history or computer security.
+Random walker has a small probability of teleporting at any step
+Teleport can go to:
+  Standard PageRank: Any page with equal probability
+   to avoid dead-end and spider-trap problems
+  Topic Specific PageRank: A topic-specific set of "relevant" pages (teleport set)
+Idea: Bias the random walk
+  When walker teleports, she pick a page from a set S
+  S contains only pages that are relevant to the topic
+    e.g., Open Directory(DMOZ) pages for a given topic/query
+  For each teleport set S, we get a different vector r_s.
+*** Matrix Formulation
+To make this work all we need is to update the teleportating part of the PageRank formulationg:
+\begin{equation}
+A_{ij} = \begin{case}
+\beta M_{ij}+(1-\beta)/|S| &\mbox{if} i\in S \\
+\beta M_{ij} & \mbox{otherwise}
+\end{case}
+\end{equation}
+A is stochastic!
+We weighted all pages in the teleport set S equally
+  Could also assign different weights to pages!
+Random walk with Restart: S is a single element
+Compute as for regular PageRank:
+  Multiply by M, the add a vector
+  Maintains sparseness
