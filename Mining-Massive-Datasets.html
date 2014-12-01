@@ -1,0 +1,1772 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+<title>Mining-Massive-Datasets</title>
+<!-- 2014-11-30 Sun 18:14 -->
+<meta  http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<meta  name="generator" content="Org-mode" />
+<meta  name="author" content="Zhiyuan Wang" />
+<style type="text/css">
+ <!--/*--><![CDATA[/*><!--*/
+  .title  { text-align: center; }
+  .todo   { font-family: monospace; color: red; }
+  .done   { color: green; }
+  .tag    { background-color: #eee; font-family: monospace;
+            padding: 2px; font-size: 80%; font-weight: normal; }
+  .timestamp { color: #bebebe; }
+  .timestamp-kwd { color: #5f9ea0; }
+  .right  { margin-left: auto; margin-right: 0px;  text-align: right; }
+  .left   { margin-left: 0px;  margin-right: auto; text-align: left; }
+  .center { margin-left: auto; margin-right: auto; text-align: center; }
+  .underline { text-decoration: underline; }
+  #postamble p, #preamble p { font-size: 90%; margin: .2em; }
+  p.verse { margin-left: 3%; }
+  pre {
+    border: 1px solid #ccc;
+    box-shadow: 3px 3px 3px #eee;
+    padding: 8pt;
+    font-family: monospace;
+    overflow: auto;
+    margin: 1.2em;
+  }
+  pre.src {
+    position: relative;
+    overflow: visible;
+    padding-top: 1.2em;
+  }
+  pre.src:before {
+    display: none;
+    position: absolute;
+    background-color: white;
+    top: -10px;
+    right: 10px;
+    padding: 3px;
+    border: 1px solid black;
+  }
+  pre.src:hover:before { display: inline;}
+  pre.src-sh:before    { content: 'sh'; }
+  pre.src-bash:before  { content: 'sh'; }
+  pre.src-emacs-lisp:before { content: 'Emacs Lisp'; }
+  pre.src-R:before     { content: 'R'; }
+  pre.src-perl:before  { content: 'Perl'; }
+  pre.src-java:before  { content: 'Java'; }
+  pre.src-sql:before   { content: 'SQL'; }
+
+  table { border-collapse:collapse; }
+  caption.t-above { caption-side: top; }
+  caption.t-bottom { caption-side: bottom; }
+  td, th { vertical-align:top;  }
+  th.right  { text-align: center;  }
+  th.left   { text-align: center;   }
+  th.center { text-align: center; }
+  td.right  { text-align: right;  }
+  td.left   { text-align: left;   }
+  td.center { text-align: center; }
+  dt { font-weight: bold; }
+  .footpara:nth-child(2) { display: inline; }
+  .footpara { display: block; }
+  .footdef  { margin-bottom: 1em; }
+  .figure { padding: 1em; }
+  .figure p { text-align: center; }
+  .inlinetask {
+    padding: 10px;
+    border: 2px solid gray;
+    margin: 10px;
+    background: #ffffcc;
+  }
+  #org-div-home-and-up
+   { text-align: right; font-size: 70%; white-space: nowrap; }
+  textarea { overflow-x: auto; }
+  .linenr { font-size: smaller }
+  .code-highlighted { background-color: #ffff00; }
+  .org-info-js_info-navigation { border-style: none; }
+  #org-info-js_console-label
+    { font-size: 10px; font-weight: bold; white-space: nowrap; }
+  .org-info-js_search-highlight
+    { background-color: #ffff00; color: #000000; font-weight: bold; }
+  /*]]>*/-->
+</style>
+<script type="text/javascript">
+/*
+@licstart  The following is the entire license notice for the
+JavaScript code in this tag.
+
+Copyright (C) 2012-2013 Free Software Foundation, Inc.
+
+The JavaScript code in this tag is free software: you can
+redistribute it and/or modify it under the terms of the GNU
+General Public License (GNU GPL) as published by the Free Software
+Foundation, either version 3 of the License, or (at your option)
+any later version.  The code is distributed WITHOUT ANY WARRANTY;
+without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE.  See the GNU GPL for more details.
+
+As additional permission under GNU GPL version 3 section 7, you
+may distribute non-source (e.g., minimized or compacted) forms of
+that code without the copy of the GNU GPL normally required by
+section 4, provided you include this license notice and a URL
+through which recipients can access the Corresponding Source.
+
+
+@licend  The above is the entire license notice
+for the JavaScript code in this tag.
+*/
+<!--/*--><![CDATA[/*><!--*/
+ function CodeHighlightOn(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(null != target) {
+     elem.cacheClassElem = elem.className;
+     elem.cacheClassTarget = target.className;
+     target.className = "code-highlighted";
+     elem.className   = "code-highlighted";
+   }
+ }
+ function CodeHighlightOff(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(elem.cacheClassElem)
+     elem.className = elem.cacheClassElem;
+   if(elem.cacheClassTarget)
+     target.className = elem.cacheClassTarget;
+ }
+/*]]>*///-->
+</script>
+<script type="text/javascript" src="http://orgmode.org/mathjax/MathJax.js"></script>
+<script type="text/javascript">
+<!--/*--><![CDATA[/*><!--*/
+    MathJax.Hub.Config({
+        // Only one of the two following lines, depending on user settings
+        // First allows browser-native MathML display, second forces HTML/CSS
+        //  config: ["MMLorHTML.js"], jax: ["input/TeX"],
+            jax: ["input/TeX", "output/HTML-CSS"],
+        extensions: ["tex2jax.js","TeX/AMSmath.js","TeX/AMSsymbols.js",
+                     "TeX/noUndefined.js"],
+        tex2jax: {
+            inlineMath: [ ["\\(","\\)"] ],
+            displayMath: [ ['$$','$$'], ["\\[","\\]"], ["\\begin{displaymath}","\\end{displaymath}"] ],
+            skipTags: ["script","noscript","style","textarea","pre","code"],
+            ignoreClass: "tex2jax_ignore",
+            processEscapes: false,
+            processEnvironments: true,
+            preview: "TeX"
+        },
+        showProcessingMessages: true,
+        displayAlign: "center",
+        displayIndent: "2em",
+
+        "HTML-CSS": {
+             scale: 100,
+             availableFonts: ["STIX","TeX"],
+             preferredFont: "TeX",
+             webFont: "TeX",
+             imageFont: "TeX",
+             showMathMenu: true,
+        },
+        MMLorHTML: {
+             prefer: {
+                 MSIE:    "MML",
+                 Firefox: "MML",
+                 Opera:   "HTML",
+                 other:   "HTML"
+             }
+        }
+    });
+/*]]>*///-->
+</script>
+</head>
+<body>
+<div id="content">
+<h1 class="title">Mining-Massive-Datasets</h1>
+<div id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#sec-0-1">0.1. Improvements to A-Priori</a>
+<ul>
+<li><a href="#sec-0-1-1">0.1.1. PCY Alogrithm (Park-Chen-Yu-Algorithm)</a></li>
+<li><a href="#sec-0-1-2">0.1.2. Multistage</a></li>
+<li><a href="#sec-0-1-3">0.1.3. Multihash</a></li>
+<li><a href="#sec-0-1-4">0.1.4. Single-Pass Approximate Algorithms</a></li>
+</ul>
+</li>
+<li><a href="#sec-0-2">0.2. All (Or Most) Frequent Itemsets In &le; 2 Passes</a>
+<ul>
+<li><a href="#sec-0-2-1">0.2.1. Simple Algorithm</a></li>
+<li><a href="#sec-0-2-2">0.2.2. Savasere-Omiecinski-Navathe (SON) Algorithm</a></li>
+<li><a href="#sec-0-2-3">0.2.3. Toivonen's Algorithm</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#sec-1">1. Week 3</a>
+<ul>
+<li><a href="#sec-1-1">1.1. The Affiliation Grpah Model</a>
+<ul>
+<li><a href="#sec-1-1-1">1.1.1. Community-Affiliation Graph</a></li>
+<li><a href="#sec-1-1-2">1.1.2. AGM: Flexibility</a></li>
+</ul>
+</li>
+<li><a href="#sec-1-2">1.2. From AGM to BigCLAM</a>
+<ul>
+<li><a href="#sec-1-2-1">1.2.1. community membership strength Factor Matrix F</a></li>
+</ul>
+</li>
+<li><a href="#sec-1-3">1.3. Solving the BigCLAM</a>
+<ul>
+<li><a href="#sec-1-3-1">1.3.1. How to find F</a></li>
+<li><a href="#sec-1-3-2">1.3.2. BigCLAM: V1.0</a></li>
+<li><a href="#sec-1-3-3">1.3.3. BigCLAM: V2.0</a></li>
+</ul>
+</li>
+<li><a href="#sec-1-4">1.4. Detecting Clusters</a></li>
+<li><a href="#sec-1-5">1.5. The Graph Laplacian Matrix</a></li>
+<li><a href="#sec-1-6">1.6. Spectral Clustering Alogirthms</a></li>
+<li><a href="#sec-1-7">1.7. Trawling</a></li>
+<li><a href="#sec-1-8">1.8. Mining Data Streams</a>
+<ul>
+<li><a href="#sec-1-8-1">1.8.1. The Stream Model</a></li>
+<li><a href="#sec-1-8-2">1.8.2. Sliding Windows</a></li>
+<li><a href="#sec-1-8-3">1.8.3. Counting 1's</a></li>
+</ul>
+</li>
+<li><a href="#sec-1-9">1.9. Bloom Filters</a></li>
+<li><a href="#sec-1-10">1.10. Counting 1's</a>
+<ul>
+<li><a href="#sec-1-10-1">1.10.1. DGIM Algorithm</a></li>
+</ul>
+</li>
+<li><a href="#sec-1-11">1.11. Sampling Streams</a>
+<ul>
+<li><a href="#sec-1-11-1">1.11.1. When Sampling Doesn't Work</a></li>
+<li><a href="#sec-1-11-2">1.11.2. Smapling Based on Hash Value</a></li>
+<li><a href="#sec-1-11-3">1.11.3. Counting Distinct Items</a></li>
+<li><a href="#sec-1-11-4">1.11.4. Computing Moments</a></li>
+</ul>
+</li>
+<li><a href="#sec-1-12">1.12. Counting Distinct Elements</a>
+<ul>
+<li><a href="#sec-1-12-1">1.12.1. Estimating Counts</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#sec-2">2. Week 4 Recommender System</a>
+<ul>
+<li><a href="#sec-2-1">2.1. overview</a>
+<ul>
+<li><a href="#sec-2-1-1">2.1.1. Types of Recommendations</a></li>
+<li><a href="#sec-2-1-2">2.1.2. Formal Model</a></li>
+<li><a href="#sec-2-1-3">2.1.3. Key Problems</a></li>
+</ul>
+</li>
+<li><a href="#sec-2-2">2.2. Content-based</a>
+<ul>
+<li><a href="#sec-2-2-1">2.2.1. Item Profiles</a></li>
+<li><a href="#sec-2-2-2">2.2.2. User Profiles</a></li>
+<li><a href="#sec-2-2-3">2.2.3. Making predictions</a></li>
+<li><a href="#sec-2-2-4">2.2.4. Pros: Content-based Approach</a></li>
+<li><a href="#sec-2-2-5">2.2.5. Cons: Content-based Approach</a></li>
+</ul>
+</li>
+<li><a href="#sec-2-3">2.3. Collaborative Filtering</a>
+<ul>
+<li><a href="#sec-2-3-1">2.3.1. Rating Predictions</a></li>
+<li><a href="#sec-2-3-2">2.3.2. Item-Item Collaborative Filtering</a></li>
+<li><a href="#sec-2-3-3">2.3.3. Item-Item v. User-User</a></li>
+</ul>
+</li>
+<li><a href="#sec-2-4">2.4. Evaluating Recommender System</a></li>
+<li><a href="#sec-2-5">2.5. Latent Factor Models</a>
+<ul>
+<li><a href="#sec-2-5-1">2.5.1. A Modern Recommender System</a></li>
+<li><a href="#sec-2-5-2">2.5.2. Modeling Local &amp; Global Effects</a></li>
+<li><a href="#sec-2-5-3">2.5.3. Collaborative filtering (Item-Item)</a></li>
+</ul>
+</li>
+<li><a href="#sec-2-6">2.6. Latent Factor Recommender System</a>
+<ul>
+<li><a href="#sec-2-6-1">2.6.1. Latent Factor Models</a></li>
+</ul>
+</li>
+<li><a href="#sec-2-7">2.7. Finding the Latent Factors</a></li>
+<li><a href="#sec-2-8">2.8. CUR</a></li>
+</ul>
+</li>
+<li><a href="#sec-3">3. Week 5 Clustering</a>
+<ul>
+<li><a href="#sec-3-1">3.1. Bradley-Fayyad-Reina (BFR) Algorithm</a>
+<ul>
+<li><a href="#sec-3-1-1">3.1.1. BFR Algorithm</a></li>
+<li><a href="#sec-3-1-2">3.1.2. Three Classes of Points</a></li>
+<li><a href="#sec-3-1-3">3.1.3. Summarizing Sets of Points</a></li>
+<li><a href="#sec-3-1-4">3.1.4. Processing a chuck of points</a></li>
+<li><a href="#sec-3-1-5">3.1.5. A Few Details&#x2026;</a></li>
+</ul>
+</li>
+<li><a href="#sec-3-2">3.2. CURE Algorithm</a>
+<ul>
+<li><a href="#sec-3-2-1">3.2.1. Clustering Using REpresentatives:</a></li>
+<li><a href="#sec-3-2-2">3.2.2. Starting CURE</a></li>
+</ul>
+</li>
+<li><a href="#sec-3-3">3.3. Performance-based Advertising</a>
+<ul>
+<li><a href="#sec-3-3-1">3.3.1. Greedy Algorithm</a></li>
+<li><a href="#sec-3-3-2">3.3.2. Analyzing the Greedy Algorithm</a></li>
+</ul>
+</li>
+<li><a href="#sec-3-4">3.4. Algorithmic Challenges</a>
+<ul>
+<li><a href="#sec-3-4-1">3.4.1. AdWords Problems</a></li>
+<li><a href="#sec-3-4-2">3.4.2. Expected Revenue</a></li>
+<li><a href="#sec-3-4-3">3.4.3. Adwords Problem</a></li>
+<li><a href="#sec-3-4-4">3.4.4. Limitations of Simple Algorithm</a></li>
+<li><a href="#sec-3-4-5">3.4.5. Estimating CTR</a></li>
+</ul>
+</li>
+<li><a href="#sec-3-5">3.5. The BALANCE Algorithms</a>
+<ul>
+<li><a href="#sec-3-5-1">3.5.1. Dealing with Limited Budgets</a></li>
+<li><a href="#sec-3-5-2">3.5.2. Bad Scenario for Greedy</a></li>
+<li><a href="#sec-3-5-3">3.5.3. BALANCE Algorithm [MSVV]</a></li>
+<li><a href="#sec-3-5-4">3.5.4. Analyzing 2-advertiser BALANCE</a></li>
+<li><a href="#sec-3-5-5">3.5.5. BALANCE: General Result</a></li>
+</ul>
+</li>
+<li><a href="#sec-3-6">3.6. Worst case for BALANCE</a>
+<ul>
+<li><a href="#sec-3-6-1">3.6.1. BALANCE Allocation</a></li>
+<li><a href="#sec-3-6-2">3.6.2. BALANCE: Analysis</a></li>
+<li><a href="#sec-3-6-3">3.6.3. General Version of the Problem</a></li>
+<li><a href="#sec-3-6-4">3.6.4. Generalized BALANCE</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#sec-4">4. week 6</a>
+<ul>
+<li><a href="#sec-4-1">4.1. Soft-Margin SVMs</a></li>
+</ul>
+</li>
+<li><a href="#sec-5">5. week 7</a>
+<ul>
+<li><a href="#sec-5-1">5.1. LSH Families of Hash Functions</a>
+<ul>
+<li><a href="#sec-5-1-1">5.1.1. Hash Functions Decide Equality</a></li>
+<li><a href="#sec-5-1-2">5.1.2. LSH Families Defined</a></li>
+<li><a href="#sec-5-1-3">5.1.3. E.g.: LS Family</a></li>
+<li><a href="#sec-5-1-4">5.1.4. Amplifying a LSH-Family</a></li>
+<li><a href="#sec-5-1-5">5.1.5. AND of Hash Functions</a></li>
+<li><a href="#sec-5-1-6">5.1.6. OR of Hash Functions</a></li>
+<li><a href="#sec-5-1-7">5.1.7. Effect of AND and OR Constructions</a></li>
+<li><a href="#sec-5-1-8">5.1.8. Composing Constructions</a></li>
+<li><a href="#sec-5-1-9">5.1.9. AND-OR Composition</a></li>
+<li><a href="#sec-5-1-10">5.1.10. OR-AND Composition</a></li>
+<li><a href="#sec-5-1-11">5.1.11. Cascading Constructions</a></li>
+<li><a href="#sec-5-1-12">5.1.12. General Use of S-Curves</a></li>
+</ul>
+</li>
+<li><a href="#sec-5-2">5.2. More LSH Families</a>
+<ul>
+<li><a href="#sec-5-2-1">5.2.1. Random Hyperplanes</a></li>
+<li><a href="#sec-5-2-2">5.2.2. Signatures for Cosine Distance</a></li>
+<li><a href="#sec-5-2-3">5.2.3. Simplification</a></li>
+<li><a href="#sec-5-2-4">5.2.4. LSH for Euclidean Distance</a></li>
+<li><a href="#sec-5-2-5">5.2.5. Fixup: Euclidean Distance</a></li>
+</ul>
+</li>
+<li><a href="#sec-5-3">5.3. Topic Specific (aka Personalized) PageRank</a>
+<ul>
+<li><a href="#sec-5-3-1">5.3.1. Matrix Formulation</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div id="outline-container-sec-0-1" class="outline-3">
+<h3 id="sec-0-1"><span class="section-number-3">0.1</span> Improvements to A-Priori</h3>
+<div class="outline-text-3" id="text-0-1">
+</div><div id="outline-container-sec-0-1-1" class="outline-4">
+<h4 id="sec-0-1-1"><span class="section-number-4">0.1.1</span> PCY Alogrithm (Park-Chen-Yu-Algorithm)</h4>
+<div class="outline-text-4" id="text-0-1-1">
+<p>
+1st pass: hash p
+2nd pass:
+</p>
+</div>
+</div>
+<div id="outline-container-sec-0-1-2" class="outline-4">
+<h4 id="sec-0-1-2"><span class="section-number-4">0.1.2</span> Multistage</h4>
+<div class="outline-text-4" id="text-0-1-2">
+<p>
+  two hash tables, 2 bitmaps, 3 passes.
+important points
+  The hash functions have to be independent.
+  We need to check both hashes on the third pass. Otherwise we will count pairs(freq item, freq item) hashTo [infreq bucket] hashTo [freq bucket].
+</p>
+</div>
+</div>
+<div id="outline-container-sec-0-1-3" class="outline-4">
+<h4 id="sec-0-1-3"><span class="section-number-4">0.1.3</span> Multihash</h4>
+<div class="outline-text-4" id="text-0-1-3">
+<p>
+Key idea: use multiple independent hash tables in 1st pass.
+</p>
+</div>
+</div>
+<div id="outline-container-sec-0-1-4" class="outline-4">
+<h4 id="sec-0-1-4"><span class="section-number-4">0.1.4</span> Single-Pass Approximate Algorithms</h4>
+</div>
+</div>
+<div id="outline-container-sec-0-2" class="outline-3">
+<h3 id="sec-0-2"><span class="section-number-3">0.2</span> All (Or Most) Frequent Itemsets In &le; 2 Passes</h3>
+<div class="outline-text-3" id="text-0-2">
+</div><div id="outline-container-sec-0-2-1" class="outline-4">
+<h4 id="sec-0-2-1"><span class="section-number-4">0.2.1</span> Simple Algorithm</h4>
+<div class="outline-text-4" id="text-0-2-1">
+<p>
+Take a random sample of the market baskets.
+</p>
+</div>
+</div>
+<div id="outline-container-sec-0-2-2" class="outline-4">
+<h4 id="sec-0-2-2"><span class="section-number-4">0.2.2</span> Savasere-Omiecinski-Navathe (SON) Algorithm</h4>
+<div class="outline-text-4" id="text-0-2-2">
+<p>
+Only work if the number of candidates can be counted in the main memory
+Subset
+Key "monotonicity"
+</p>
+</div>
+</div>
+<div id="outline-container-sec-0-2-3" class="outline-4">
+<h4 id="sec-0-2-3"><span class="section-number-4">0.2.3</span> Toivonen's Algorithm</h4>
+<div class="outline-text-4" id="text-0-2-3">
+<p>
+no false negative, in some case it may not give an answer, so you need to rerun it. No gurantee for finishing.
+Start as in the simple algorithm, but lower the threshold slightly.
+Goal is to
+</p>
+
+<p>
+Negative Border
+{A, B, C, D}
+</p>
+</div>
+</div>
+</div>
+
+
+
+<div id="outline-container-sec-1" class="outline-2">
+<h2 id="sec-1"><span class="section-number-2">1</span> Week 3</h2>
+<div class="outline-text-2" id="text-1">
+</div><div id="outline-container-sec-1-1" class="outline-3">
+<h3 id="sec-1-1"><span class="section-number-3">1.1</span> The Affiliation Grpah Model</h3>
+<div class="outline-text-3" id="text-1-1">
+</div><div id="outline-container-sec-1-1-1" class="outline-4">
+<h4 id="sec-1-1-1"><span class="section-number-4">1.1.1</span> Community-Affiliation Graph</h4>
+<div class="outline-text-4" id="text-1-1-1">
+<p>
+Community, C
+Memberships, M
+Nodes, V
+AGM -&gt; Graph
+\( P(u, v) = 1 - \prod\limits_{c\in M_u \cap M_v}(1-p_c) \)
+</p>
+</div>
+</div>
+<div id="outline-container-sec-1-1-2" class="outline-4">
+<h4 id="sec-1-1-2"><span class="section-number-4">1.1.2</span> AGM: Flexibility</h4>
+<div class="outline-text-4" id="text-1-1-2">
+<p>
+can express a variety of community stuctures:
+Non-overlapping, Overlapping, Nested
+</p>
+</div>
+</div>
+</div>
+<div id="outline-container-sec-1-2" class="outline-3">
+<h3 id="sec-1-2"><span class="section-number-3">1.2</span> From AGM to BigCLAM</h3>
+<div class="outline-text-3" id="text-1-2">
+<p>
+F<sub>uA</sub> The membership strength of node \(u\)
+Each community \(A\) links nodes independently:
+\( P_A(u, V) = 1 - exp(-F_{uA}\cdot F_{vA})  \)
+</p>
+</div>
+<div id="outline-container-sec-1-2-1" class="outline-4">
+<h4 id="sec-1-2-1"><span class="section-number-4">1.2.1</span> community membership strength Factor Matrix F</h4>
+<div class="outline-text-4" id="text-1-2-1">
+<p>
+\( P(u,v) = 1 - \prod\limits_c (1-p_c(u,v)) \)
+Then prob. at least one common \(C\) links them:
+</p>
+\begin{align*}
+P(u,v) &= 1 - exp(-\sum_C F_{uC}\cdot F_{vC})   \\
+       &= 1 - exp(-F_u\cdot F_v^{T})
+\end{align*}
+</div>
+</div>
+</div>
+<div id="outline-container-sec-1-3" class="outline-3">
+<h3 id="sec-1-3"><span class="section-number-3">1.3</span> Solving the BigCLAM</h3>
+<div class="outline-text-3" id="text-1-3">
+</div><div id="outline-container-sec-1-3-1" class="outline-4">
+<h4 id="sec-1-3-1"><span class="section-number-4">1.3.1</span> How to find F</h4>
+<div class="outline-text-4" id="text-1-3-1">
+<p>
+Given a Network G(V,E), estimate F
+\( arg max_F \prod p(u,v) \prod (1-p(u,v)) \)
+take the log likelihood \(l(F_u)\)
+</p>
+\begin{equation*}
+l(F_u) = \sum\limits_{v\in N(u)} log(1-exp(-F_uF_v^T)) - \sum\limits_{v\not \in N(u)}(F_u F_V^T)
+\end{equation*}
+</div>
+</div>
+<div id="outline-container-sec-1-3-2" class="outline-4">
+<h4 id="sec-1-3-2"><span class="section-number-4">1.3.2</span> BigCLAM: V1.0</h4>
+<div class="outline-text-4" id="text-1-3-2">
+<p>
+gradient descent
+slow because \( \bigtriangledown l(F_u) \) takes linear time
+</p>
+</div>
+</div>
+<div id="outline-container-sec-1-3-3" class="outline-4">
+<h4 id="sec-1-3-3"><span class="section-number-4">1.3.3</span> BigCLAM: V2.0</h4>
+<div class="outline-text-4" id="text-1-3-3">
+<p>
+\( \sum\limits_{v\not \in N(u)} F_v = (\sum\limits_v F_v - F_u - \sum\limits_{v\in N(u)} F_v)  \)
+We cache \( sum_{v\not \in N(u)} F_v \) 
+now it takes linear time in the degree \(|N(u)|\) of \(u\)
+</p>
+</div>
+</div>
+</div>
+<div id="outline-container-sec-1-4" class="outline-3">
+<h3 id="sec-1-4"><span class="section-number-3">1.4</span> Detecting Clusters</h3>
+<div class="outline-text-3" id="text-1-4">
+<p>
+Goal: find densely linked clusters
+Discovering social circles, circles of trust
+Graph Partitioning Criteria: Conductance
+\(\phi(A) = \cfrac{CUT(A)}{VOL(A)}\)
+vol(A): total weight of the edges with at least one endpoint in A: vol(A) = &sum;\limits<sub>i&isin; A</sub>d<sub>i</sub>
+Why use this criteria?
+Produces more balanced partitions.
+</p>
+</div>
+</div>
+<div id="outline-container-sec-1-5" class="outline-3">
+<h3 id="sec-1-5"><span class="section-number-3">1.5</span> The Graph Laplacian Matrix</h3>
+<div class="outline-text-3" id="text-1-5">
+<p>
+Adjacency matrix
+Graph Partitioning
+Task: Partition the graph into two pieces such the resulting pieces have low conductance.
+Problem: Computing optimal cut is NP-hard.
+\(A\): adjacency matrix of undirected G
+  A<sub>ij</sub> = 1 if (i, j) is an edge, else 0
+\(x\) is a vector of label/value of each node of \(G\)
+A&sdot; x
+(1) L = D - A
+(2) &lambda;<sub>2</sub> = \cfrac{x^T Lx}{x^T x}
+(2) can be derived from (1).
+min f(y) = sum (y<sub>i</sub> - y<sub>j</sub>)<sup>2</sup> = y<sup>T</sup> Ly
+Fiedler vector
+</p>
+</div>
+</div>
+<div id="outline-container-sec-1-6" class="outline-3">
+<h3 id="sec-1-6"><span class="section-number-3">1.6</span> Spectral Clustering Alogirthms</h3>
+<div class="outline-text-3" id="text-1-6">
+<p>
+Three basic stages:
+</p>
+<ol class="org-ol">
+<li>Pre-processing
+</li>
+</ol>
+<p>
+Construct a matrix representation of the graph
+</p>
+<ol class="org-ol">
+<li>Decomposition
+</li>
+</ol>
+<p>
+Compute eigenvalues and eigenvectors of the matrix
+Map each point to a lower-dimensional representation based on one or more eigenvectors
+</p>
+<ol class="org-ol">
+<li>Grouping
+</li>
+</ol>
+<p>
+Assign points to two or more clusters, based on the new representation
+</p>
+
+<p>
+K-way Sepectral Clustering
+Recursive bi-partitioning ('92)  Disadvantages: inefficient, unstable
+Cluster multiple eigenvectors ('00 preferable)
+</p>
+</div>
+</div>
+<div id="outline-container-sec-1-7" class="outline-3">
+<h3 id="sec-1-7"><span class="section-number-3">1.7</span> Trawling</h3>
+<div class="outline-text-3" id="text-1-7">
+<p>
+Searching for small communities in the Web graph
+Frequent itemsets = complete bipartite graphs!
+view each mode i as a set Si of nodes i points to
+K<sub>s,t</sub> = a set Y of size t that occurs in s sets S<sub>i</sub>
+s &#x2026; minimum support (|S| = s)
+t &#x2026; itemset size (|Y| = t)
+</p>
+</div>
+</div>
+<div id="outline-container-sec-1-8" class="outline-3">
+<h3 id="sec-1-8"><span class="section-number-3">1.8</span> Mining Data Streams</h3>
+<div class="outline-text-3" id="text-1-8">
+</div><div id="outline-container-sec-1-8-1" class="outline-4">
+<h4 id="sec-1-8-1"><span class="section-number-4">1.8.1</span> The Stream Model</h4>
+<div class="outline-text-4" id="text-1-8-1">
+<p>
+Data Management VS Steam Management
+DBMS e.p. SQL internel insert
+Stream Management is import when the input rate is controlled externally e.g. Google query
+</p>
+</div>
+<ol class="org-ol"><li><a id="sec-1-8-1-1" name="sec-1-8-1-1"></a>Two Forms of Query<br  /><div class="outline-text-5" id="text-1-8-1-1">
+<p>
+Ad-hoc queries
+Standing queries
+query once, active all the time
+e.g. Report each new max value ever seen in stream S
+archive streams, if working storage is limited
+</p>
+</div>
+</li>
+<li><a id="sec-1-8-1-2" name="sec-1-8-1-2"></a>Applications<br  /><div class="outline-text-5" id="text-1-8-1-2">
+<p>
+Mining query streams
+Mining click streams
+IP packets can be monitored at a switch
+</p>
+</div>
+</li></ol>
+</div>
+<div id="outline-container-sec-1-8-2" class="outline-4">
+<h4 id="sec-1-8-2"><span class="section-number-4">1.8.2</span> Sliding Windows</h4>
+<div class="outline-text-4" id="text-1-8-2">
+<p>
+queries are about a window of length N
+what if N &gt; main memory
+E.G. Averages
+Stream of integers
+Standing query: what is the average of the integers in the window(size N)?
+For the first N inputs, simply sum and count the average
+Afterward, when a new input \(i\) arrives, change the average by adding \((i-j)/N\)
+</p>
+</div>
+</div>
+<div id="outline-container-sec-1-8-3" class="outline-4">
+<h4 id="sec-1-8-3"><span class="section-number-4">1.8.3</span> Counting 1's</h4>
+</div>
+</div>
+<div id="outline-container-sec-1-9" class="outline-3">
+<h3 id="sec-1-9"><span class="section-number-3">1.9</span> Bloom Filters</h3>
+<div class="outline-text-3" id="text-1-9">
+<p>
+Bloom Filters can have false positive
+A Bloom filter is an array of bits, together with a number of hash functions
+The argument of each hash function is a stream element, and it returns a position in the array.
+E.G. Bloom Filter
+Use N = 11 bits for our filter
+Stream elements = integers
+Use two hash functions:
+h<sub>1</sub>(x) = odd numbered bits
+h<sub>2</sub>(x) = the same, but takes even numbered bits
+Bloom Filter Lookup
+compute h(y) for each hash function y.
+if all resulting in 1
+</p>
+</div>
+</div>
+<div id="outline-container-sec-1-10" class="outline-3">
+<h3 id="sec-1-10"><span class="section-number-3">1.10</span> Counting 1's</h3>
+<div class="outline-text-3" id="text-1-10">
+<p>
+Counting Bits
+Problem: given a stream of 0's and 1's, be prepared to answer queries of the form "how many 1's in the last k bits?" where k \(\leq\) N
+</p>
+</div>
+
+<div id="outline-container-sec-1-10-1" class="outline-4">
+<h4 id="sec-1-10-1"><span class="section-number-4">1.10.1</span> DGIM Algorithm</h4>
+<div class="outline-text-4" id="text-1-10-1">
+<p>
+O(log<sup>2</sup> N bits per stream)
+</p>
+</div>
+<ol class="org-ol"><li><a id="sec-1-10-1-1" name="sec-1-10-1-1"></a>Timestamps<br  /><div class="outline-text-5" id="text-1-10-1-1">
+<p>
+Each bit in the stream has a timestamp, starting 0, 1, &#x2026;
+Record timestamps modulo N(the window size), so we can represent any relevant timestamp in O(log2N) bits.
+</p>
+</div>
+</li>
+<li><a id="sec-1-10-1-2" name="sec-1-10-1-2"></a>Buckets<br  /><div class="outline-text-5" id="text-1-10-1-2">
+<p>
+A bucket is a segment of the window; it is represented by a record consisting of:
+</p>
+<ol class="org-ol">
+<li>The timestamp of its end [O(log N) bits]
+</li>
+<li>The number of 1's between its beginning and its beginning and end [O(log log N) bits].
+</li>
+</ol>
+</div>
+</li>
+<li><a id="sec-1-10-1-3" name="sec-1-10-1-3"></a>Representing a Stream by Buckets<br  /><div class="outline-text-5" id="text-1-10-1-3">
+<p>
+Either one 
+Bucket do not overlap
+Buckets are sorted by size
+Buckets disappear when their end time &gt; N
+</p>
+</div>
+</li>
+<li><a id="sec-1-10-1-4" name="sec-1-10-1-4"></a>Updating Buckets<br  /><div class="outline-text-5" id="text-1-10-1-4">
+<p>
+When a new bit comes in, drop the oldest bucket if its end-time is prior to N time units before the cur time
+If the current bit is 0, no other changes
+If the current bit is 1:
+</p>
+<ol class="org-ol">
+<li>Create a new bucket of size 1, for just this bit.
+End timestamp = current time.
+</li>
+<li>If there are now three buckets of size 1, combine the oldest two into a bucket of size 2
+</li>
+<li>If there are now three buckets of size 2, &#x2026;
+</li>
+</ol>
+<p>
+so on &#x2026;
+</p>
+</div>
+</li></ol>
+</div>
+</div>
+
+<div id="outline-container-sec-1-11" class="outline-3">
+<h3 id="sec-1-11"><span class="section-number-3">1.11</span> Sampling Streams</h3>
+<div class="outline-text-3" id="text-1-11">
+</div><div id="outline-container-sec-1-11-1" class="outline-4">
+<h4 id="sec-1-11-1"><span class="section-number-4">1.11.1</span> When Sampling Doesn't Work</h4>
+<div class="outline-text-4" id="text-1-11-1">
+<p>
+Google find unique query for the past month
+</p>
+</div>
+</div>
+<div id="outline-container-sec-1-11-2" class="outline-4">
+<h4 id="sec-1-11-2"><span class="section-number-4">1.11.2</span> Smapling Based on Hash Value</h4>
+<div class="outline-text-4" id="text-1-11-2">
+<p>
+E.G.: Fixed Sample Size
+Sampling Key-Value Pairs
+</p>
+</div>
+</div>
+<div id="outline-container-sec-1-11-3" class="outline-4">
+<h4 id="sec-1-11-3"><span class="section-number-4">1.11.3</span> Counting Distinct Items</h4>
+</div>
+<div id="outline-container-sec-1-11-4" class="outline-4">
+<h4 id="sec-1-11-4"><span class="section-number-4">1.11.4</span> Computing Moments</h4>
+</div>
+</div>
+<div id="outline-container-sec-1-12" class="outline-3">
+<h3 id="sec-1-12"><span class="section-number-3">1.12</span> Counting Distinct Elements</h3>
+<div class="outline-text-3" id="text-1-12">
+<p>
+Problem: a data stream consists of elements chosen from a set of size n. Maintain a count of the number of distinct elements seen so far.
+Applications
+How many different words are founc among the web pages being crawled at a site?
+How many unique users visited Facebook the past month?
+</p>
+</div>
+<div id="outline-container-sec-1-12-1" class="outline-4">
+<h4 id="sec-1-12-1"><span class="section-number-4">1.12.1</span> Estimating Counts</h4>
+<div class="outline-text-4" id="text-1-12-1">
+<p>
+Flajolet-Martin Approach
+Pick a hash function h that maps each of the n elements to at least log2n bits.
+For each stream element a, let r(a) be the number of trailing 0's in h(a) 
+Record R = the maximum r(a) seen
+Estimate = 2<sup>R</sup>
+</p>
+</div>
+<ol class="org-ol"><li><a id="sec-1-12-1-1" name="sec-1-12-1-1"></a>Why it works<br  /><div class="outline-text-5" id="text-1-12-1-1">
+<p>
+The probability that a given h(a) ends in at least i 0's is 2<sup>-i</sup>
+If there are m different elements, the probability that R &ge; i is 1-(1-2<sup>-i</sup>)<sup>m</sup>
+Since 2<sup>-i</sup> is small, 1-(1-2<sup>-i</sup>)<sup>m</sup> = 1 - e<sup>-m2<sup>-i</sup></sup>
+</p>
+</div>
+</li>
+<li><a id="sec-1-12-1-2" name="sec-1-12-1-2"></a>Solution<br  /><div class="outline-text-5" id="text-1-12-1-2">
+<p>
+Partition your samples into small groups.
+Log n, where n = size of universal set, suffices
+Take the average of groups
+Then take the median of the averages
+</p>
+</div>
+</li>
+<li><a id="sec-1-12-1-3" name="sec-1-12-1-3"></a>Generalization: Moments<br  /><div class="outline-text-5" id="text-1-12-1-3">
+<p>
+AMS
+Expected Value of X
+2<sup>nd</sup> moment is &sum;<sub>a</sub>(m<sub>a</sub>)<sup>2</sup>
+E(X) = (1/n)(&sum;<sub>all times t</sub> n * (twice the number of times the stream element at time t appears from that time on)-1))
+     = &sum;<sub>a</sub>(1+3+5+\ldots + 2m<sub>a</sub>-1)
+Problem: Streams never end
+Fixups
+</p>
+
+<p>
+h(1) 3+7=10 1010 =1
+h(9) 3*9+7=34%11=3 0011 = 0
+h(8) 31%11=9 1001 = 0
+h(5) 22 = 0 0000 = 4
+h(2) 2 0010 = 1
+h(6) 25%11=3 0011 = 0
+h(3) 16%11=5 0101 = 0
+h(4) 19%11=8 1000 = 3
+h(7) 28%11=6 0110 = 1
+h(10) 37%11=4 
+</p>
+</div>
+</li></ol>
+</div>
+</div>
+</div>
+
+
+
+<div id="outline-container-sec-2" class="outline-2">
+<h2 id="sec-2"><span class="section-number-2">2</span> Week 4 Recommender System</h2>
+<div class="outline-text-2" id="text-2">
+</div><div id="outline-container-sec-2-1" class="outline-3">
+<h3 id="sec-2-1"><span class="section-number-3">2.1</span> overview</h3>
+<div class="outline-text-3" id="text-2-1">
+<p>
+long tail
+</p>
+</div>
+<div id="outline-container-sec-2-1-1" class="outline-4">
+<h4 id="sec-2-1-1"><span class="section-number-4">2.1.1</span> Types of Recommendations</h4>
+<div class="outline-text-4" id="text-2-1-1">
+<p>
+Editorial and hand curated
+Simple aggregates
+top 10, most popular, recent uploads
+Tailored to individual users
+</p>
+</div>
+</div>
+<div id="outline-container-sec-2-1-2" class="outline-4">
+<h4 id="sec-2-1-2"><span class="section-number-4">2.1.2</span> Formal Model</h4>
+<div class="outline-text-4" id="text-2-1-2">
+<p>
+C = set of Customers
+S = set of Items
+Utility function u: C&times; S &rarr; R
+R = set of ratings
+R is a totally ordered set
+</p>
+</div>
+</div>
+<div id="outline-container-sec-2-1-3" class="outline-4">
+<h4 id="sec-2-1-3"><span class="section-number-4">2.1.3</span> Key Problems</h4>
+<div class="outline-text-4" id="text-2-1-3">
+</div><ol class="org-ol"><li><a id="sec-2-1-3-1" name="sec-2-1-3-1"></a>Gathering Known Ratings<br  /><div class="outline-text-5" id="text-2-1-3-1">
+<p>
+implicit: purchase means high ratings
+</p>
+</div>
+</li>
+<li><a id="sec-2-1-3-2" name="sec-2-1-3-2"></a>Extrapolating Utilities<br  /><div class="outline-text-5" id="text-2-1-3-2">
+<p>
+Key problem: matrix U is sparse
+Cold start:
+New items have no ratings
+New items have no history
+Three approaches to recommender systems
+Content-based
+Collaborative
+Latent factor based
+</p>
+</div>
+</li></ol>
+</div>
+</div>
+<div id="outline-container-sec-2-2" class="outline-3">
+<h3 id="sec-2-2"><span class="section-number-3">2.2</span> Content-based</h3>
+<div class="outline-text-3" id="text-2-2">
+<p>
+Main idea: Recommand items to customer x similar to previous items rated highly by x
+Users like &rarr; Item profiles &rarr; User profile
+</p>
+</div>
+<div id="outline-container-sec-2-2-1" class="outline-4">
+<h4 id="sec-2-2-1"><span class="section-number-4">2.2.1</span> Item Profiles</h4>
+<div class="outline-text-4" id="text-2-2-1">
+<p>
+For each item, create an item profile
+Profile is a set of features (a vector)
+Text features
+Profile = set of "important" words in item (document)
+How to pick important words?
+TF-IDF
+</p>
+</div>
+</div>
+<div id="outline-container-sec-2-2-2" class="outline-4">
+<h4 id="sec-2-2-2"><span class="section-number-4">2.2.2</span> User Profiles</h4>
+<div class="outline-text-4" id="text-2-2-2">
+<p>
+User has rated items with profiles i<sub>1</sub>, \ldots, i<sub>n</sub>
+Simple: (weighted) average of rated item profiles
+Variant: Normalize weights using average rating of user
+</p>
+</div>
+<ol class="org-ol"><li><a id="sec-2-2-2-1" name="sec-2-2-2-1"></a>Example 1: Boolean Utility Matrix<br  /><div class="outline-text-5" id="text-2-2-2-1">
+<p>
+Items are movies, only feature is "Actor"
+Suppose users x has watch 5 movies
+2 movies featuring actor A
+3 movies featuring actor B
+User Profile
+A rating = 0.4
+B rating = 0.6
+</p>
+</div>
+</li>
+<li><a id="sec-2-2-2-2" name="sec-2-2-2-2"></a>Example 2: Star Ratings<br  /><div class="outline-text-5" id="text-2-2-2-2">
+<p>
+Same example, 1-5 star ratings
+Actor A's movies rated 3, 5
+Actor B's movies rated 1, 2, 4
+Useful step: Normalize ratings by subtracting user's mean rating(3)
+</p>
+</div>
+</li></ol>
+</div>
+<div id="outline-container-sec-2-2-3" class="outline-4">
+<h4 id="sec-2-2-3"><span class="section-number-4">2.2.3</span> Making predictions</h4>
+<div class="outline-text-4" id="text-2-2-3">
+<p>
+User profile x, Item profile i
+Estimate U(x, i) = cos(&theta;) = (x &sdot; i) / (|x||i|)
+cosine distance
+</p>
+</div>
+</div>
+<div id="outline-container-sec-2-2-4" class="outline-4">
+<h4 id="sec-2-2-4"><span class="section-number-4">2.2.4</span> Pros: Content-based Approach</h4>
+<div class="outline-text-4" id="text-2-2-4">
+<p>
+No need for data on other users
+Able to recommend to users with unique tastes
+Able to recommend new &amp; unpopular items
+  No first-rater problem
+Explanations for recommended items
+  Content features that caused an item to be recommended
+</p>
+</div>
+</div>
+<div id="outline-container-sec-2-2-5" class="outline-4">
+<h4 id="sec-2-2-5"><span class="section-number-4">2.2.5</span> Cons: Content-based Approach</h4>
+<div class="outline-text-4" id="text-2-2-5">
+<p>
+Finding the appropriate features is hard
+Overspecialization
+ Never recommends items outside user's content profile
+ People might have multiple interests
+ Unable to exploit quality judgments of other users
+Cold-start problem for new users
+ How to build a user profile?
+</p>
+</div>
+</div>
+</div>
+<div id="outline-container-sec-2-3" class="outline-3">
+<h3 id="sec-2-3"><span class="section-number-3">2.3</span> Collaborative Filtering</h3>
+<div class="outline-text-3" id="text-2-3">
+<p>
+Consider user x
+Find set N of other users whose ratings are "similar" to x's ratings
+Estimate x's ratings based on ratings of users in N
+</p>
+
+<p>
+Option 1 : Jaccard Similarity
+sim(A,B) = |r<sub>A&cap;</sub> r<sub>B|</sub>/|r<sub>A&cup;</sub> r<sub>B|</sub>
+Problem: Ignores rating values
+Option 2: Cosine similarity
+sim(A,B) = cos(r<sub>A</sub>, r<sub>B</sub>)
+Problem: treat missing data as negtive
+Option 3: Centered cosine
+Normalize ratings by subtracting row mean
+Also known as Pearson Correlation
+</p>
+</div>
+<div id="outline-container-sec-2-3-1" class="outline-4">
+<h4 id="sec-2-3-1"><span class="section-number-4">2.3.1</span> Rating Predictions</h4>
+<div class="outline-text-4" id="text-2-3-1">
+<p>
+Let r<sub>x</sub> be the vector of user x's ratings
+Let N be the set of k users most similar to x who have also rated item i
+Prediction for user x and item i
+Option 1: r<sub>xi</sub> = 1/k &sum;<sub>y&isin; N</sub> r<sub>yi</sub>
+Option 2: r<sub>xi</sub> = &sum;<sub>y&isin; N</sub> s<sub>xy</sub>r<sub>yi</sub>/sum<sub>y&isin; N</sub> s<sub>xy</sub>
+where s<sub>xy</sub> is the similarity between x and y
+</p>
+</div>
+</div>
+<div id="outline-container-sec-2-3-2" class="outline-4">
+<h4 id="sec-2-3-2"><span class="section-number-4">2.3.2</span> Item-Item Collaborative Filtering</h4>
+<div class="outline-text-4" id="text-2-3-2">
+<p>
+Estimate rating for item i based on ratings for similar items
+r<sub>xi</sub> = \cfrac{&sum;<sub>j&isin; N(i;x)s<sub>ij</sub>*r<sub>ij</sub></sub>}{&sum;<sub>j&isin; N(i;x)</sub>s<sub>ij</sub>}
+</p>
+</div>
+</div>
+<div id="outline-container-sec-2-3-3" class="outline-4">
+<h4 id="sec-2-3-3"><span class="section-number-4">2.3.3</span> Item-Item v. User-User</h4>
+<div class="outline-text-4" id="text-2-3-3">
+<p>
+In theory, user-user and item-item are dual approaches
+In practice, item-item outperforms user-user in many user cases
+Item are "simpler" than users
+  Items belong to a small set of "genres", users have varied tastes
+  Item Similarity is more meaningful than user Similarity
+</p>
+</div>
+</div>
+</div>
+<div id="outline-container-sec-2-4" class="outline-3">
+<h3 id="sec-2-4"><span class="section-number-3">2.4</span> Evaluating Recommender System</h3>
+<div class="outline-text-3" id="text-2-4">
+<p>
+Root-mean-square erroe (RMSE)
+Problems:
+Narrow focus on accuracy sometimes misses the point
+  Prediction Diversity
+  Prediction Context
+  Order of predictions
+In practice, we care only to predict high ratings
+  Alternative: precision at top k
+</p>
+</div>
+</div>
+<div id="outline-container-sec-2-5" class="outline-3">
+<h3 id="sec-2-5"><span class="section-number-3">2.5</span> Latent Factor Models</h3>
+<div class="outline-text-3" id="text-2-5">
+</div><div id="outline-container-sec-2-5-1" class="outline-4">
+<h4 id="sec-2-5-1"><span class="section-number-4">2.5.1</span> A Modern Recommender System</h4>
+<div class="outline-text-4" id="text-2-5-1">
+<p>
+Multi-scale modeling of the data
+Global
+  overall deviation
+Factorization
+  addressing "regional" effects
+Collaborative filtering
+  extract local patterns
+</p>
+</div>
+</div>
+<div id="outline-container-sec-2-5-2" class="outline-4">
+<h4 id="sec-2-5-2"><span class="section-number-4">2.5.2</span> Modeling Local &amp; Global Effects</h4>
+<div class="outline-text-4" id="text-2-5-2">
+<p>
+Global:
+Baseline estimation
+Local neighborhood (CF/NN):
+Final estimate
+</p>
+</div>
+</div>
+
+<div id="outline-container-sec-2-5-3" class="outline-4">
+<h4 id="sec-2-5-3"><span class="section-number-4">2.5.3</span> Collaborative filtering (Item-Item)</h4>
+<div class="outline-text-4" id="text-2-5-3">
+<p>
+In practice we get better estimates if we model deviations:
+b<sub>xi</sub> = &mu; + b<sub>x</sub> + b<sub>i</sub>
+r<sub>xi</sub> = b<sub>xi</sub> + \frac{&sum; s<sub>ij</sub>(r<sub>xj</sub>-b<sub>xj</sub>)}{&sum; s<sub>ij</sub>}
+&mu; = overall mean rating
+b<sub>x</sub> = rating deviation of user x
+b<sub>i</sub> = (avg. rating of movie i) - mu
+Problems/Issues:
+Similarity measures are "arbitrary"
+Pairwise similarities neglect interdependencies among users
+Taking a weight average can be restricting
+</p>
+</div>
+</div>
+</div>
+<div id="outline-container-sec-2-6" class="outline-3">
+<h3 id="sec-2-6"><span class="section-number-3">2.6</span> Latent Factor Recommender System</h3>
+<div class="outline-text-3" id="text-2-6">
+<p>
+Recommendations via Optimization
+</p>
+</div>
+<div id="outline-container-sec-2-6-1" class="outline-4">
+<h4 id="sec-2-6-1"><span class="section-number-4">2.6.1</span> Latent Factor Models</h4>
+<div class="outline-text-4" id="text-2-6-1">
+<p>
+"SVD" on Netflix data: R &asymp; Q&sdot; P<sup>T</sup>
+SVD gives minimum reconstruction error (Sum of squared errors)
+</p>
+</div>
+</div>
+</div>
+<div id="outline-container-sec-2-7" class="outline-3">
+<h3 id="sec-2-7"><span class="section-number-3">2.7</span> Finding the Latent Factors</h3>
+</div>
+<div id="outline-container-sec-2-8" class="outline-3">
+<h3 id="sec-2-8"><span class="section-number-3">2.8</span> CUR</h3>
+<div class="outline-text-3" id="text-2-8">
+<p>
+Pros &amp; Cons
++Easy interpretation
++Sparse basis
+-Duplicate columns and rows
+  columns of large norms will be sampled many times
+</p>
+</div>
+</div>
+</div>
+
+<div id="outline-container-sec-3" class="outline-2">
+<h2 id="sec-3"><span class="section-number-2">3</span> Week 5 Clustering</h2>
+<div class="outline-text-2" id="text-3">
+</div><div id="outline-container-sec-3-1" class="outline-3">
+<h3 id="sec-3-1"><span class="section-number-3">3.1</span> Bradley-Fayyad-Reina (BFR) Algorithm</h3>
+<div class="outline-text-3" id="text-3-1">
+<p>
+BFR is a variant of k-means for very large (disk-resident) data sets
+Assumes each cluster is normally distributed around a centroid in Euclidean space
+</p>
+</div>
+<div id="outline-container-sec-3-1-1" class="outline-4">
+<h4 id="sec-3-1-1"><span class="section-number-4">3.1.1</span> BFR Algorithm</h4>
+<div class="outline-text-4" id="text-3-1-1">
+<p>
+Points are read from disk one main-memory-full at a time
+Most points from previous memory are summarized by simple statistics
+To begin, from the initial load we select the initial k centroid 
+</p>
+</div>
+</div>
+<div id="outline-container-sec-3-1-2" class="outline-4">
+<h4 id="sec-3-1-2"><span class="section-number-4">3.1.2</span> Three Classes of Points</h4>
+<div class="outline-text-4" id="text-3-1-2">
+<p>
+Discard set (DS):
+Points close enough to a centroid to be summarized
+Compression set (CS):
+Groups of points that are close together but not close to any existing centroid
+These points are summarized, but not assigned to a cluster
+Retained set (RS):
+isolated points waiting to be assigned to a compression set
+</p>
+</div>
+</div>
+<div id="outline-container-sec-3-1-3" class="outline-4">
+<h4 id="sec-3-1-3"><span class="section-number-4">3.1.3</span> Summarizing Sets of Points</h4>
+<div class="outline-text-4" id="text-3-1-3">
+<p>
+For each cluster, DS is summarized by:
+The number of points, N
+The vector SUM, whose i<sup>th</sup> component = sum of the coordinates of the points in i<sup>th</sup> dimension
+The vector SUMSQ: i<sup>th</sup> component = sum of squares of coordinates in i<sup>th</sup> dimension
+centroid and variance can be calculated by N, SUM and SUMSQ
+</p>
+</div>
+</div>
+<div id="outline-container-sec-3-1-4" class="outline-4">
+<h4 id="sec-3-1-4"><span class="section-number-4">3.1.4</span> Processing a chuck of points</h4>
+<div class="outline-text-4" id="text-3-1-4">
+<p>
+Consider merging compressed sets in the CS
+If this is the last round, merge all compressed sets in the CS and all RS points into their nearest cluster
+</p>
+</div>
+</div>
+<div id="outline-container-sec-3-1-5" class="outline-4">
+<h4 id="sec-3-1-5"><span class="section-number-4">3.1.5</span> A Few Details&#x2026;</h4>
+<div class="outline-text-4" id="text-3-1-5">
+<p>
+Q1) How do we decide if a point is "close enough" to a cluster (and discard
+BFR approach
+The Mahalanobis distance is less than a threshold
+High likelihood of the point belonging to currently 
+3 &sigma;
+Q2) Should 2 CS subclusters be combined?
+Combine if the combined variance is below some threshold
+Many alternatives: Treat dimensions differently, consider density
+</p>
+</div>
+</div>
+</div>
+<div id="outline-container-sec-3-2" class="outline-3">
+<h3 id="sec-3-2"><span class="section-number-3">3.2</span> CURE Algorithm</h3>
+<div class="outline-text-3" id="text-3-2">
+<p>
+Limitations of BFR Algorithm
+Makes strong assumptions, not work on non-linear separable
+</p>
+</div>
+<div id="outline-container-sec-3-2-1" class="outline-4">
+<h4 id="sec-3-2-1"><span class="section-number-4">3.2.1</span> Clustering Using REpresentatives:</h4>
+<div class="outline-text-4" id="text-3-2-1">
+<p>
+Assumes a Euclidean distance
+Allows clusters to assume any shape
+Uses a collection of representative points to represent cluster
+</p>
+</div>
+</div>
+<div id="outline-container-sec-3-2-2" class="outline-4">
+<h4 id="sec-3-2-2"><span class="section-number-4">3.2.2</span> Starting CURE</h4>
+<div class="outline-text-4" id="text-3-2-2">
+<p>
+Pass 1 of 2:
+Pick a random sample of points that fit in main memory
+Cluster sample points hierarchically to create the initial clusters
+Pick representative points:
+For each cluster, pick k representative points, as dispersed as possible
+Move each representative point a fixed fraction (e.g., 20%) toward the centroid of the cluster
+Pass 2 of 2:
+Now, rescan the whole dataset and visit each point p in the data set
+Place it in the "closest cluster"
+</p>
+</div>
+</div>
+</div>
+<div id="outline-container-sec-3-3" class="outline-3">
+<h3 id="sec-3-3"><span class="section-number-3">3.3</span> Performance-based Advertising</h3>
+<div class="outline-text-3" id="text-3-3">
+<p>
+Matching Algorithm
+Problem: Find a maximum matching for a given bipartite graph
+A perfect one if exists
+There is a polynomial-time offline algorithm based on augmenting paths
+Online Graph Matching Problem
+girls -&gt; boys
+In each round, one girl's choices are revealed
+At that time, we have decide to either pair them.
+Example of application: Assigning tasks to servers.
+</p>
+</div>
+<div id="outline-container-sec-3-3-1" class="outline-4">
+<h4 id="sec-3-3-1"><span class="section-number-4">3.3.1</span> Greedy Algorithm</h4>
+<div class="outline-text-4" id="text-3-3-1">
+<p>
+just pick a boy eligible for a new girl
+Competitive Ration
+= min<sub>all possible inputs I</sub>(|M<sub>greedy</sub>|/|M<sub>opt</sub>|)
+the worst case performance overall all possible inputs of greedy algorithm
+</p>
+</div>
+</div>
+<div id="outline-container-sec-3-3-2" class="outline-4">
+<h4 id="sec-3-3-2"><span class="section-number-4">3.3.2</span> Analyzing the Greedy Algorithm</h4>
+<div class="outline-text-4" id="text-3-3-2">
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+
+
+<colgroup>
+<col  class="left" />
+
+<col  class="left" />
+
+<col  class="left" />
+</colgroup>
+<tbody>
+<tr>
+<td class="left">M<sub>opt</sub></td>
+<td class="left">&lt;= 2</td>
+<td class="left">M<sub>greedy</sub></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<div id="outline-container-sec-3-4" class="outline-3">
+<h3 id="sec-3-4"><span class="section-number-3">3.4</span> Algorithmic Challenges</h3>
+<div class="outline-text-3" id="text-3-4">
+<p>
+Performance-based advertising works!
+  Multi-billion-dollar industry
+What ads to show for a given query?
+</p>
+</div>
+<div id="outline-container-sec-3-4-1" class="outline-4">
+<h4 id="sec-3-4-1"><span class="section-number-4">3.4.1</span> AdWords Problems</h4>
+<div class="outline-text-4" id="text-3-4-1">
+<p>
+A stream of queries arrives at the search engine: q<sub>1</sub>,q<sub>2</sub>,&#x2026;
+Several advertisers bid on each query
+When query q<sub>i</sub> arrives, search engine must pick a subset of advertisers whose ads are shown
+Goal: Maximize serach engine's revenues
+Clearly we need an online algorithm!
+</p>
+</div>
+</div>
+<div id="outline-container-sec-3-4-2" class="outline-4">
+<h4 id="sec-3-4-2"><span class="section-number-4">3.4.2</span> Expected Revenue</h4>
+<div class="outline-text-4" id="text-3-4-2">
+<p>
+CTR (click through rate) * Bid
+</p>
+</div>
+</div>
+<div id="outline-container-sec-3-4-3" class="outline-4">
+<h4 id="sec-3-4-3"><span class="section-number-4">3.4.3</span> Adwords Problem</h4>
+<div class="outline-text-4" id="text-3-4-3">
+<p>
+Given:
+A set of bids by advertisers for search queries
+A click-through rate for each advertiser-query pair
+A budget for each advertiser (say for 1day, month&#x2026;)
+A limit on the number of ads to be displayed with each search query
+Respond to each search query with a set of advertisers such that:
+The size of the set is no larger than limitation
+Each advertiser has bid on the serach query
+Each advertiser has enough budget left to pay
+</p>
+</div>
+</div>
+<div id="outline-container-sec-3-4-4" class="outline-4">
+<h4 id="sec-3-4-4"><span class="section-number-4">3.4.4</span> Limitations of Simple Algorithm</h4>
+<div class="outline-text-4" id="text-3-4-4">
+<p>
+CTR of an ad is unknown
+Advertisers have limited budgets and bid on multiple ads (BALANCE algorithm)
+</p>
+</div>
+</div>
+<div id="outline-container-sec-3-4-5" class="outline-4">
+<h4 id="sec-3-4-5"><span class="section-number-4">3.4.5</span> Estimating CTR</h4>
+<div class="outline-text-4" id="text-3-4-5">
+<p>
+CTR for a query-ad pair is measured historically
+Averaged over a time peroid
+Some complications we won't cover in this lecture:
+CTR is position dependent
+Explore v Exploit: Keep showing ads we already know the CTR of, or show new ads to estimate their CTR?
+</p>
+</div>
+</div>
+</div>
+<div id="outline-container-sec-3-5" class="outline-3">
+<h3 id="sec-3-5"><span class="section-number-3">3.5</span> The BALANCE Algorithms</h3>
+<div class="outline-text-3" id="text-3-5">
+</div><div id="outline-container-sec-3-5-1" class="outline-4">
+<h4 id="sec-3-5-1"><span class="section-number-4">3.5.1</span> Dealing with Limited Budgets</h4>
+<div class="outline-text-4" id="text-3-5-1">
+<p>
+Simplest algorithm is greedy.
+</p>
+</div>
+</div>
+<div id="outline-container-sec-3-5-2" class="outline-4">
+<h4 id="sec-3-5-2"><span class="section-number-4">3.5.2</span> Bad Scenario for Greedy</h4>
+<div class="outline-text-4" id="text-3-5-2">
+<p>
+Two advertisers A and B
+A bids on query x, B bids on x and y
+Both have budgets of $4
+Query stream: x x x x y y y y
+  worst case greedy choice: B B B B _ _ _ _
+Optimal: A A A A B B B B
+This is the worst case! And it's determinstic. Greedy always give the same answer to the same situation.
+</p>
+</div>
+</div>
+<div id="outline-container-sec-3-5-3" class="outline-4">
+<h4 id="sec-3-5-3"><span class="section-number-4">3.5.3</span> BALANCE Algorithm [MSVV]</h4>
+<div class="outline-text-4" id="text-3-5-3">
+<p>
+For each query, pick the advertiser with the largest unspent budget
+Break ties arbitrarily (but in a determinstic way)
+</p>
+</div>
+</div>
+<div id="outline-container-sec-3-5-4" class="outline-4">
+<h4 id="sec-3-5-4"><span class="section-number-4">3.5.4</span> Analyzing 2-advertiser BALANCE</h4>
+<div class="outline-text-4" id="text-3-5-4">
+<p>
+BALANCE must exhaust at least one advertiser's budget:
+  if not, we can allocate more queries
+  Assume BALANCE exhausts A<sub>2's</sub> budget
+</p>
+</div>
+</div>
+<div id="outline-container-sec-3-5-5" class="outline-4">
+<h4 id="sec-3-5-5"><span class="section-number-4">3.5.5</span> BALANCE: General Result</h4>
+<div class="outline-text-4" id="text-3-5-5">
+<p>
+In the general case, worst competitive ration of BALANCE is 1-1/e = approx. 0.63
+   Interestingly, no online algorithm has a better competitive ratio
+</p>
+</div>
+</div>
+</div>
+<div id="outline-container-sec-3-6" class="outline-3">
+<h3 id="sec-3-6"><span class="section-number-3">3.6</span> Worst case for BALANCE</h3>
+<div class="outline-text-3" id="text-3-6">
+<p>
+N advertisers: A<sub>1</sub>, A<sub>2</sub>, &#x2026; A<sub>N</sub>
+Queries:
+N\( \cdot \) B queries appear in N rounds of B queries each
+Bidding:
+Round 1 queries: bidders A<sub>1</sub>, A<sub>2</sub>, &#x2026;, A<sub>N</sub>
+Round 2 queries: bidders      A<sub>2</sub>, &#x2026;, A<sub>N</sub>
+Round i queries: bidders      A<sub>i</sub>, &#x2026;, A<sub>N</sub>
+</p>
+</div>
+<div id="outline-container-sec-3-6-1" class="outline-4">
+<h4 id="sec-3-6-1"><span class="section-number-4">3.6.1</span> BALANCE Allocation</h4>
+<div class="outline-text-4" id="text-3-6-1">
+<p>
+After k rounds, the allocation to advertiser k is:
+S<sub>K</sub> = &sum;<sub>1&le; i &le; k</sub> B/(N-i+1)
+</p>
+</div>
+</div>
+<div id="outline-container-sec-3-6-2" class="outline-4">
+<h4 id="sec-3-6-2"><span class="section-number-4">3.6.2</span> BALANCE: Analysis</h4>
+<div class="outline-text-4" id="text-3-6-2">
+<p>
+Fact: for large n
+Result due to Euler
+ln(N) - 1 = ln(N - k)
+k = N(1 - 1/e)
+So after the first k = N(1-1/e) rounds, we cannot allocate a query to any advertiser
+Revenue = B&sdot; N(1-1/e)
+Competitive ratio = 1 - 1/e
+</p>
+</div>
+</div>
+<div id="outline-container-sec-3-6-3" class="outline-4">
+<h4 id="sec-3-6-3"><span class="section-number-4">3.6.3</span> General Version of the Problem</h4>
+<div class="outline-text-4" id="text-3-6-3">
+<p>
+So far: all bids = 1, all budgets equal (=B)
+In a general setting BALANCE can be terrible
+</p>
+</div>
+</div>
+<div id="outline-container-sec-3-6-4" class="outline-4">
+<h4 id="sec-3-6-4"><span class="section-number-4">3.6.4</span> Generalized BALANCE</h4>
+<div class="outline-text-4" id="text-3-6-4">
+<p>
+Consider query q, bidder i
+Bid = x<sub>i</sub>
+Budget = b<sub>i</sub>
+Amount spent so far = m<sub>i</sub>
+Fraction of budget left over f<sub>i</sub> = 1 - m<sub>i</sub>/b<sub>i</sub>
+Define &phi;<sub>i</sub>(q) = x<sub>i</sub>(1-e<sup>-f<sub>i</sub></sup>)
+Allocate query q to bidder i with largest value of &phi;<sub>i</sub>(q)
+Same competitive ratio (1 - 1/e)
+</p>
+</div>
+</div>
+</div>
+</div>
+<div id="outline-container-sec-4" class="outline-2">
+<h2 id="sec-4"><span class="section-number-2">4</span> week 6</h2>
+<div class="outline-text-2" id="text-4">
+</div><div id="outline-container-sec-4-1" class="outline-3">
+<h3 id="sec-4-1"><span class="section-number-3">4.1</span> Soft-Margin SVMs</h3>
+<div class="outline-text-3" id="text-4-1">
+<p>
+Hinge Loss
+</p>
+</div>
+</div>
+</div>
+<div id="outline-container-sec-5" class="outline-2">
+<h2 id="sec-5"><span class="section-number-2">5</span> week 7</h2>
+<div class="outline-text-2" id="text-5">
+</div><div id="outline-container-sec-5-1" class="outline-3">
+<h3 id="sec-5-1"><span class="section-number-3">5.1</span> LSH Families of Hash Functions</h3>
+<div class="outline-text-3" id="text-5-1">
+</div><div id="outline-container-sec-5-1-1" class="outline-4">
+<h4 id="sec-5-1-1"><span class="section-number-4">5.1.1</span> Hash Functions Decide Equality</h4>
+<div class="outline-text-4" id="text-5-1-1">
+<p>
+There is a subtlety about what a "hash function" really is in the context of LSH family.
+A hash function h really takes two elements x and y, and returns a decision whether x and y are candidates for comparison.
+E.g.: the family of minhash functions computes minhash values and says "yes" iff they are the same.
+Shorthand: "h(x) = h(y)" means h says "yes" for pair elements x and y
+</p>
+</div>
+</div>
+<div id="outline-container-sec-5-1-2" class="outline-4">
+<h4 id="sec-5-1-2"><span class="section-number-4">5.1.2</span> LSH Families Defined</h4>
+<div class="outline-text-4" id="text-5-1-2">
+<p>
+Suppose we have a space S of points with a distance measure d.
+A family H of hash functions is said to be (d<sub>1</sub>, d<sub>2</sub>, p<sub>1</sub>, p<sub>2</sub>)-sensitive if for any x and y in S:
+</p>
+<ol class="org-ol">
+<li>If \( d(x,y) \leq d_1 \), then the probability over all h in H, that h(x) = h(y) is at least p<sub>1</sub>.
+</li>
+<li>If \( d(x,y) \geq d_2 \), then the probability over all h in H, that h(x) = h(y) is at most p<sub>2</sub>.
+</li>
+</ol>
+</div>
+</div>
+<div id="outline-container-sec-5-1-3" class="outline-4">
+<h4 id="sec-5-1-3"><span class="section-number-4">5.1.3</span> E.g.: LS Family</h4>
+<div class="outline-text-4" id="text-5-1-3">
+<p>
+Let S = sets, d = Jaccard distance, H is formed from the minhash functions for all permuatations.
+Then Prob[h(x)=h(y)] = 1 - d(x,y).
+  Restates theorem about Jaccard similarity and minhashing in terms of Jaccard distance.
+Claim: H is a (1/3, 2/3, 2/3, 1/3)-sensitive family for S and d.
+</p>
+</div>
+</div>
+<div id="outline-container-sec-5-1-4" class="outline-4">
+<h4 id="sec-5-1-4"><span class="section-number-4">5.1.4</span> Amplifying a LSH-Family</h4>
+<div class="outline-text-4" id="text-5-1-4">
+<p>
+The "bands" technique we learned for signature matrices carries over to this more general setting.
+  Goal: the "S-curve" effect seen here.
+AND construction like "rows in a band."
+OR construction like "many bands."
+</p>
+</div>
+</div>
+<div id="outline-container-sec-5-1-5" class="outline-4">
+<h4 id="sec-5-1-5"><span class="section-number-4">5.1.5</span> AND of Hash Functions</h4>
+<div class="outline-text-4" id="text-5-1-5">
+<p>
+Given family H, construct family H' whose members each consist of r functions from H.
+For \( h = {h_1, \ldots, h_r} \) in H', h(x) = h(y) iff h<sub>i</sub>(x) = h<sub>i</sub>(y) for all i.
+Theorem: If H is (d<sub>1</sub>, d<sub>2</sub>, p<sub>1</sub>, p<sub>2</sub>)-sensitive, then H' is (d<sub>1</sub>, d<sub>2</sub>, (p<sub>1</sub>)<sup>r</sup>, (p<sub>2</sub>)<sup>r</sup>)-sensitive.
+  Proof: Use fact that h<sub>i's</sub> are independent.
+</p>
+</div>
+</div>
+<div id="outline-container-sec-5-1-6" class="outline-4">
+<h4 id="sec-5-1-6"><span class="section-number-4">5.1.6</span> OR of Hash Functions</h4>
+<div class="outline-text-4" id="text-5-1-6">
+<p>
+Given family H, construct family H' whose members each consist of b functions from H.
+For \( h = {h_1, \ldots, h_b} \) in H', h(x) = h(y) iff h<sub>i</sub>(x) = h<sub>i</sub>(y) for some i.
+Theorem: If H is (d<sub>i</sub>, d<sub>2</sub>, p<sub>1</sub>, p<sub>2</sub>)-sensitive, then H' is (d<sub>1</sub>, d<sub>2</sub>, 1- (1-p<sub>1</sub>)<sup>b</sup>, (1-p<sub>2</sub>)<sup>b</sup>)-sensitive.
+</p>
+</div>
+</div>
+<div id="outline-container-sec-5-1-7" class="outline-4">
+<h4 id="sec-5-1-7"><span class="section-number-4">5.1.7</span> Effect of AND and OR Constructions</h4>
+<div class="outline-text-4" id="text-5-1-7">
+<p>
+AND makes all probabilities shrink, but by choosing r conrrectly, we can make the lower probablity approach 0 while the higher does not.
+OR makes all probabilities grow, but by choosing b correctly, we can make the upper probability approach 1 while the lower does not.
+</p>
+</div>
+</div>
+<div id="outline-container-sec-5-1-8" class="outline-4">
+<h4 id="sec-5-1-8"><span class="section-number-4">5.1.8</span> Composing Constructions</h4>
+<div class="outline-text-4" id="text-5-1-8">
+<p>
+As for the signature matrix, we can use the AND construction followed by the OR construction.
+  Or vice-versa.
+  Or any sequence of AND's and OR's alternating.
+</p>
+</div>
+</div>
+<div id="outline-container-sec-5-1-9" class="outline-4">
+<h4 id="sec-5-1-9"><span class="section-number-4">5.1.9</span> AND-OR Composition</h4>
+<div class="outline-text-4" id="text-5-1-9">
+<p>
+Each of the two probabilities p is transformed into 1-(1-p<sup>r</sup>)<sup>b</sup>.
+  The "S-curve" studied before.
+E.g.: Take H and construct H' by the AND construction with r=4. Then, from H', construct H'' by the OR construction with b=4. (1-(1-p<sup>4</sup>)<sup>4</sup>)
+</p>
+</div>
+</div>
+<div id="outline-container-sec-5-1-10" class="outline-4">
+<h4 id="sec-5-1-10"><span class="section-number-4">5.1.10</span> OR-AND Composition</h4>
+<div class="outline-text-4" id="text-5-1-10">
+<p>
+Each of the two probabilities p is transformed 1-(1-p<sup>b</sup>)<sup>r</sup>
+  The same S-curve, mirrored horizontally and vertically.
+</p>
+</div>
+</div>
+<div id="outline-container-sec-5-1-11" class="outline-4">
+<h4 id="sec-5-1-11"><span class="section-number-4">5.1.11</span> Cascading Constructions</h4>
+<div class="outline-text-4" id="text-5-1-11">
+<p>
+E.g.: Apply the (4-4) OR-AND construction followed by the (4,4) AND-OR construction.
+Transfrom a (.2,.2,.8,.8)-sensitive into (.2,.8,.9999996,.0008715)-sensitive
+</p>
+</div>
+</div>
+<div id="outline-container-sec-5-1-12" class="outline-4">
+<h4 id="sec-5-1-12"><span class="section-number-4">5.1.12</span> General Use of S-Curves</h4>
+<div class="outline-text-4" id="text-5-1-12">
+<p>
+For each S-curve 1-(1-p<sup>r</sup>)<sup>b</sup>, there is a threshold t, for which 1-(1-t<sup>r</sup>)<sup>b</sup> = t.
+Above t, high probabilities are increased; below t, they are decreased.
+You improve the sensitivity as long as the low probability is less than t, and the high probability is gerater thant.
+  Iteratea as you like.
+</p>
+</div>
+</div>
+</div>
+<div id="outline-container-sec-5-2" class="outline-3">
+<h3 id="sec-5-2"><span class="section-number-3">5.2</span> More LSH Families</h3>
+<div class="outline-text-3" id="text-5-2">
+<p>
+For cosine distance, there is a technique analogous to minhashing for generating a (d<sub>1</sub>,d<sub>2</sub>,(1-d<sub>1</sub>/180),(1-d<sub>2</sub>/180))-sensitive family for andy d<sub>1</sub> and d<sub>2</sub>
+Called random hyperplane.
+</p>
+</div>
+<div id="outline-container-sec-5-2-1" class="outline-4">
+<h4 id="sec-5-2-1"><span class="section-number-4">5.2.1</span> Random Hyperplanes</h4>
+<div class="outline-text-4" id="text-5-2-1">
+<p>
+Each vector v determines a hash function h<sub>v</sub> with two buckets.
+h<sub>v</sub>(x) = +1 if \( v \cdot x > 0 \); = -1 if \( v \cdot x < 0 \)
+LS-family H = set of all functions derived from any vector.
+Clain: Prob[h(x)=h(y)] = 1 - (angle between x and y divided by 180)
+</p>
+</div>
+</div>
+<div id="outline-container-sec-5-2-2" class="outline-4">
+<h4 id="sec-5-2-2"><span class="section-number-4">5.2.2</span> Signatures for Cosine Distance</h4>
+<div class="outline-text-4" id="text-5-2-2">
+<p>
+Pick some number of vectors, and hash your data for each vector.
+The result is a signature(sketch) of +1's and -1's that can be used for LSH lke the minhash signatures for Jaccard distance.
+But you don't have to think this way.
+The existence of the LSH-family is sufficient amplification by AND/OR.
+</p>
+</div>
+</div>
+<div id="outline-container-sec-5-2-3" class="outline-4">
+<h4 id="sec-5-2-3"><span class="section-number-4">5.2.3</span> Simplification</h4>
+<div class="outline-text-4" id="text-5-2-3">
+<p>
+We need not pick from among all possible vectors v to form a component of a sketch.
+It suffices to consider only vector v consisting of +1 and -1 components.
+</p>
+</div>
+</div>
+<div id="outline-container-sec-5-2-4" class="outline-4">
+<h4 id="sec-5-2-4"><span class="section-number-4">5.2.4</span> LSH for Euclidean Distance</h4>
+<div class="outline-text-4" id="text-5-2-4">
+<p>
+Simple idea: hash functions correspond to lines.
+Partition the line into buckets of size a.
+Hash each point to the bucket containig its projection onto the line.
+Nearby points are always close; distant points are rarely in same bucket.
+</p>
+
+<p>
+If points are distance \( \geq 2a \) apart then \( 60 \leq \theta \leq 90 \) for there to be a chance that the points go in the same bucket.
+I.e., at most 1/3 probability
+If points are distance \( \leq a/2 \), then there is at least 1/2 chance they share a bucket.
+Yields a (a/2, 2a, 1/2, 1/3)-sensitive family of hash functions.
+</p>
+</div>
+</div>
+<div id="outline-container-sec-5-2-5" class="outline-4">
+<h4 id="sec-5-2-5"><span class="section-number-4">5.2.5</span> Fixup: Euclidean Distance</h4>
+<div class="outline-text-4" id="text-5-2-5">
+<p>
+For previous distance measures, we could start with a (d,e,p,q)-sensitive family for any d &lt; e, and drive p and q to 1 and 0 by AND\OR constructions.
+Here, we seem to need \( e \geq 4d \).
+But as long as d &lt; e, the probability of points at distance d falling in the same bucket is greater than the probability of points at distance e doing so.
+Thus, the hash familiy formed by projecting onto lines is a (d,e,p,q)-sensitive family for some p &gt; q.
+</p>
+</div>
+</div>
+</div>
+<div id="outline-container-sec-5-3" class="outline-3">
+<h3 id="sec-5-3"><span class="section-number-3">5.3</span> Topic Specific (aka Personalized) PageRank</h3>
+<div class="outline-text-3" id="text-5-3">
+<p>
+Instead of generic popularity, can we measure popularity within a topic?
+Goal: Evaluate Web pages not just according to their popularity, but by how cloase theay are to a particular topic, e.g. "sports" or "history".
+Allow search queries to be answered based on interests of the user.
+  E.g.:Query "Trojan" wants different pages depending on whether you are interested on sports, history or computer security.
+Random walker has a small probability of teleporting at any step
+Teleport can go to:
+  Standard PageRank: Any page with equal probability
+   to avoid dead-end and spider-trap problems
+  Topic Specific PageRank: A topic-specific set of "relevant" pages (teleport set)
+Idea: Bias the random walk
+  When walker teleports, she pick a page from a set S
+  S contains only pages that are relevant to the topic
+    e.g., Open Directory(DMOZ) pages for a given topic/query
+  For each teleport set S, we get a different vector r<sub>s</sub>.
+</p>
+</div>
+<div id="outline-container-sec-5-3-1" class="outline-4">
+<h4 id="sec-5-3-1"><span class="section-number-4">5.3.1</span> Matrix Formulation</h4>
+<div class="outline-text-4" id="text-5-3-1">
+<p>
+To make this work all we need is to update the teleportating part of the PageRank formulationg:
+</p>
+\begin{equation}
+A_{ij} = \begin{cases}
+\beta M_{ij}+(1-\beta)/|S| &\mbox{if}\ i\in S \\
+\beta M_{ij} & \mbox{otherwise}
+\end{cases}
+\end{equation}
+<p>
+A is stochastic!
+We weighted all pages in the teleport set S equally
+  Could also assign different weights to pages!
+Random walk with Restart: S is a single element
+Compute as for regular PageRank:
+  Multiply by M, the add a vector
+  Maintains sparseness
+</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<p class="author">Author: Zhiyuan Wang</p>
+<p class="date">Created: 2014-11-30 Sun 18:14</p>
+<p class="creator"><a href="http://www.gnu.org/software/emacs/">Emacs</a> 24.3.1 (<a href="http://orgmode.org">Org</a> mode 8.2.10)</p>
+<p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
+</div>
+</body>
+</html>
