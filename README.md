@@ -3,6 +3,9 @@ org-note
 
 my emacs org-mode notes bakeup
 
+[Mining Massive Datasets (rendered html)]
+(http://users.eecs.northwestern.edu/~zww991/Mining-Massive-Datasets.html)
+
 Org-mode is the easiest way to get your notes organized.   
 It can be exported as html, latex, etc.  
 It also supports natural tex expression.  
