@@ -3,7 +3,7 @@ org-note
 
 my emacs org-mode notes bakeup
 
-[Mining Massive Datasets]
+[Mining Massive Datasets (rendered html)]
 (http://users.eecs.northwestern.edu/~zww991/Mining-Massive-Datasets.html)
 
 Org-mode is the easiest way to get your notes organized.   
