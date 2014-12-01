@@ -1,3 +1,49 @@
+#+HTML_MATHJAX: align:"left" mathml:t path:"https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"
+* Week 2
+** Finding Similar Sets
+Many data-mining problems can be expressed as finding "similar" sets.
+*** Similar Documents
+Three Essential Techniques for Similar Documents
+1. Shingling : convert documents, emails, etc., to sets.
+2. Minhashing : convert large sets to short signatures, while preserving similarity.
+3. Locality-sensitive hashing : focus on pairs of signatures likely to be similar.
+** Min-hashing
+Jaccard Similarity
+\( Sim(C_1, C_2) = C_1 \cup C_2 / (C_1 \cap C_2) \)
+*** From Sets to Boolean Matrice
+- Rows = elements of the universal set.
+  - e.g.: the set of all k-shingles.
+- Columns = sets
+- 1 in row e and column S iff e is a member of S
+- Column similarity is the Jaccard similarity of the sets of their row with 1.
+- Typical matrix is sparse.
+*** Minhashing
+- Imagine the rows permuted randomly
+- Define minhash function h(C) = the number of the first row(in permuted order) in which column C has 1
+- Use several(e.g., 100) independent hash functions to create a signature for each column.
+- The signatures can be displayed in another matrix -- the signature matrix -- whose columns represent the sets and the rows represent the minhash values, in order for that column. 
+*** Suprising Property
+a # 1 1
+b # 0 1
+c # 1 0
+d # 0 0
+- The probability (over all permutaions of the rows) that h(C_1) = h(C_2) is the same as Sim(C_1, C_2)
+- Both are a/(a+b+c)!
+*** Similarity for Signatures
+- The similarity of signatures is the fraction of the minhash functions in which they agree
+  - Thinking of signatures as columns of integers, the similarity of signatures is the fraction of rows in which they agree
+- Thus, the expected similarity of two signatures equals the jaccard similarity of the columns or sets that the signatrues represent
+*** Implementation
+suppose 1 billion rows
+- A good approximation to permuting rows: pick, say, 100 hash functions.
+- For each column c and each hash function h_i, keep a "slot" M(i,c)
+- Intent: M(i,c) will become the smallest value of h_i(r) for which column c has 1 in row r.
+  - i.e., h_i(r) gives order of rows for i^{th} permutation.
+** LSH
+- Big idea: hash columns of signature matrix M several times.
+- Arrange that (only) similar columns are likely to hash to the same bucket.
+- Candidate pairs are those that hash at least once to the same bucket.
+
 ** Improvements to A-Priori
 *** PCY Alogrithm (Park-Chen-Yu-Algorithm)
   1st pass: hash p
@@ -371,6 +417,14 @@ Pros & Cons
 -Duplicate columns and rows
   columns of large norms will be sampled many times
 
+** SVD Example and Conclusion
+- Q: Find users that like 'Matrix'
+- A: Map query into a 'concept space' -- how?
+Project into concept space: inner product with each 'concept' vector v_i
+Compactly, we have:
+q_concept = qV
+- Observation: User d that rated ('Alien') will be similar to user q that rated ('Matrix'), although d and q have zero ratings in common!
+
 * Week 5 Clustering
 ** Bradley-Fayyad-Reina (BFR) Algorithm
 BFR is a variant of k-means for very large (disk-resident) data sets
@@ -627,10 +681,10 @@ Idea: Bias the random walk
 *** Matrix Formulation
 To make this work all we need is to update the teleportating part of the PageRank formulationg:
 \begin{equation}
-A_{ij} = \begin{case}
-\beta M_{ij}+(1-\beta)/|S| &\mbox{if} i\in S \\
+A_{ij} = \begin{cases}
+\beta M_{ij}+(1-\beta)/|S| &\mbox{if}\ i\in S \\
 \beta M_{ij} & \mbox{otherwise}
-\end{case}
+\end{cases}
 \end{equation}
 A is stochastic!
 We weighted all pages in the teleport set S equally
@@ -639,3 +693,171 @@ Random walk with Restart: S is a single element
 Compute as for regular PageRank:
   Multiply by M, the add a vector
   Maintains sparseness
+*** Discovering the Topic Vector S
+- Create different PageRanks for different topics
+   - The 16 DMOZ top-level categories: arts, business, sports, \ldots
+
+- Which topic ranking to use?
+   + User can pick from a menu
+   + Classify query into a topic
+   + Can use the context of the query
+      + E.g., query is launched from a web page talking about a known topic
+      + History of queries e.g., "basketball" followed by "Jordan"
+- User context, e.g., user's bookmarks, /ldots
+** Applicaiton to Measuring Proximity of Graph
+a.k.a: Similarity, Relevance
+*** Good proximity measure?
+- Shortest path is not good
+  - No effect of degree-1 nodes (E,F,G)!
+  - Multi-faceted relationships
+- Network flow is not good
+  - Does not punish long paths
+*** What is good notion of proximity?
+- Multiple Connections
+- Quality of connection
+  - Direct & In-direct connections
+  - Length, Degree, Weight \ldots
+*** SimRank: Idea
+- SimRank: Random walks from a fixed node on k-partite graphs
+- Setting: k-partite graph with k types of nodes 
+  - e.g.: picture nodes and tag nodes
+- Do a Random Walk with Restarts from node u
+  - i.e., teleport set S = {u}
+- Resulting scores measures similarity to node u
+- Problem:
+  - Must be done once for each node u
+  - Suitable for sub-Web-scale applications
+** Web Spam
+*** What is Web Spam?
+- Spamming:
+  - Any deliberate action to boost a web page's position in search engine results, incommensurate with page's real value
+- Spam:
+  - Web pages that are the result of spamming 
+- This is a very broad definition
+  - SEO industry minght disagree!
+  - SEO = search engine optimization
+- Approximately 10-15% of web pages are sapmming
+*** Web Search
+- Early search engines:
+  - Crawl the Web
+  - Index pages by the words they contained
+  - Respond to search queries (lists of words) with the pages containing those words
+- Early page ranking:
+  - Attempt to order pages matching a search query by "importance"
+- First search engines considered:
+  1) Number of times query words appeared
+  2) Prominence of word position, e.g. title, header
+*** First Spammers
+- As people began to use search engines to find things on the Web, those with commercial interests tried to exploit search engines to bring people to thir own site -- whether they wanted to be thre or not
+- E.g.:
+  - Shirt-seller might pretend to be about "movies"
+- Techniques for achieving high relevance/importance for a web page
+*** First Spammers: Term Spam
+- How do you make your page appear to be about movies?
+  - (1)Add the word "movie" 1,000 times to your page
+  - Set text color to the background color, so only search engines would see it
+  - (2)Or, run the query "movie" on your target search engine
+  - See what page came first in the listings
+  - Copy it into your page, make it "invisible"
+- These and similar techniques are term spam
+*** Google's Solution to Term Spam
+- Believe what people say about you, rather than what you say about yourself
+  - Use words in the anchor text (words that appear underlined to represent the link) and its surrounding text
+- PageRank as a tool to measure the "importance" of Web pages
+*** Why It Works?
+- Our hypothetical shirt-seller looses
+  - Saying he is about movies doesn't help, because others don't say he is about movies
+  - His page isn't very important, so it won't be ranked high for shirts or movies
+- E.g.:
+  - Shirt-seller creates 1,000 pages, each links to his with "movie" in the anchor text
+  - These pages have no links in, so they get little PageRank
+  - So the shirt-seller can't beat truly important movie pages, like IMDB
+** Spam Farming
+Google vs. Spammers
+- Spam farms were developed to concentrate PageRank on a single page
+- Link spam:
+  - Creating link structures that boost PageRank of a particular page
+*** Link Spamming
+- Three kinds of web pages from a spammer's point of view
+  - Inaccessible pages
+  - Accessible pages
+    - e.g., blog comments pages
+    - spammer can post links to his pages
+- Own pages
+  - Completely controlled by spammer
+  - May span multiple domain names
+*** Link Farms
+- Spammer's goal:
+  - Max PageRank of a target page t
+- Technique:
+  - Get as many links from accessible pages as possible to target page t
+  - Construct "link farm" to get PageRank multiplier effect
+[[./771.png]]
+*** Analysis
+N -- # pages on the web
+M -- # of pages spammer owns
+- x: PageRank contributed by accessible pages
+- y: PageRank of target page t
+- Rank of each "farm" page \( = \cfrac{\beta y}{M} + \cfrac{1-\beta}{N} \)
+$\require{cancel}$
+-
+\begin{align*} 
+y &= x + \beta M [\cfrac{\beta y}{M} + \cfrac{1-\beta}{N}] + \cfrac{1-\beta}{N} \\ 
+    &= x + \beta^2y + \cfrac{\beta(1-\beta)M}{N}+\xcancel{\cfrac{1-\beta}{N}}
+\end{align*}
+- $y = \cfrac{x}{1-\beta^2} + C\cfrac{M}{N}$ where $c = \cfrac{\beta}{1+\beta}$
+- For \beta = 0.85, 1/(1-\beta^2) = 3.6
+- Multiplier effect for acquired PageRank 
+- By making M large, we can make y as large as we want
+** TrustRank
+*** Combating Spam
+- Combating term spam
+  - Analyze text using statistical methods
+  - Similar to email spam filtering
+  - Also useful: Detecting approximate duplicate pages
+- Combating link spam
+  - Detection and blacklisting of structure that look like spam farms
+    - leads to another war -- hiding and detecting spam farms
+  - TrustRank = topic-specific PageRank with a teleport set of trusted pages
+    - E.g.: .edu domains, similar domains for non-US schools
+*** TrustRank: Idea
+- Basic principle: Approximate isolation
+  - It is rare for a "good" page to point to a "bad" (spam) page
+- Sample a set of seed pages from the web
+- Have an oracle (human) to identify the good pages and the spam pages in the seed set
+  - Expensive task, so we must make seed as small as possible
+*** Trust Propagation
+- Call the subset of seed pages that are identified as good the trusted pages
+- Perform a topic-sensitive PageRank with teleport set = trusted pages
+  - Propagate trust through links:
+    - Each page gets a trust value between 0 and 1
+- Solution 1: Use a threshold value and mark all page below the trust threshold as spam
+*** Why is it a good idea?
+- Trust attenuation
+  - The degree of trust conferred by a trusted page decreases with the distance in the graph
+- Trust splitting:
+  - The larger the number of out-links from a page, the less scrutiny the page author give each out-link 
+  - Trust is split across out-links
+*** Picking the Seed Set
+- Two conflicting considerations:
+  - Huamn has to inspect each seed page, so seed set must be as small as possible
+  - Must ensure every good page gets adequate trust rank, so need make all good pages reachable from seed set by short pagths
+*** Approaches to Picking Seed Set
+- Suppose we want to pick a seed set of k pages
+- How to do that?
+- (1)PageRank:
+  - Pick the top k pages by PageRank
+  - The idea/hope is that you can't get a bad page's rank really really high
+- (2)Use trusted domains whose membership is controlled, like .edu, .mil, .gob
+*** Spam Mass
+- In the TrustRank model, we start with good pages and propagate trust
+-Complementary view:
+  What fraction of a page's PageRank comes from spam pages?
+- In practice, we don't know all the spam pages, so we need to estimate
+Solution 2:
+- r_p = PageRank of page p
+- r_p^+ = PageRank of p with teleport into trusted pages only
+- Then: What fraction of a page's PageRank comes from spam pages?
+  r_p^- = r_p - r_p^+
+- Spam mass of p = \( \cfrac{r_p^-}{r_p} \)
+
