@@ -5,6 +5,7 @@ my emacs org-mode notes bakeup
 
 [Mining Massive Datasets (rendered html)]
 (http://users.eecs.northwestern.edu/~zww991/Mining-Massive-Datasets.html)
+
 [Natural Language Processing]
 (http://users.eecs.northwestern.edu/~zww991/Natural-Language-Processing.html)
 
