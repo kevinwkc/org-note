@@ -1,0 +1,159 @@
+* Language Modeling
+** Introduction to N-grams
+- Today's goal: assign a probability to a sentence or a sequence of words:
+  \[ P(W) = P(w_1, w_2, w_3, w_4, \ldots, w_n) \]
+- Related task: probability of an upcoming word:
+  \[ P(w_5|w_1, w_2, w_3, w_4) \]
+- A model that computes either of these:
+ \[ P(W) \mbox{ or } P(w_n|w_1,w_2, \ldots, w_{n-1}) \mbox{ is called a language model.}  \]
+- Better: the grammar. But language model or LM  is starndard.
+*** How to compute P(W)
+- How to compute this joint probability of P(its, water, is, so, transparent, that)
+- Intuition: use Chain Rule of Bayes
+*** How to estimate these probabilities
+- just count and divide? 
+  - No. Too many sentences.
+- Markov Assumption
+  - Simplifying assumption:
+    \[ P(the|\mbox{its water is so transparent that}) \approx P(the|that) \]
+  - Or maybe
+    \[ P(the|\mbox{its water is so transparent that}) \approx P(the|transparent\ taht) \]
+  - Formally
+    \[ P(w_i|w_1w_2\ldots w_{i-1}) \approx P(w_i)|w_{i-k}\ldots w_{i-1} \]
+*** Simplest case: Unigram model
+\[ P(w_1w_2\ldots w_n) \approx \prod\limits_i {P(w_i)} \]
+*** Bigram model
+- Condition on the previous word:
+\[ P(w_i|w_1w_2\ldots w_{i-1}) \approx P(w_i|w_{i-1}) \]
+*** N-gram models
+- We can extend to trigrams, 4-grams, 5-grams
+- In general this is an insufficient model of language
+  - because language has long-distance dependencies:
+  
+  "The computer which I had just put into the machine room on the fifth floor crashed."
+- But we can often get away with N-gram models
+** Estimating N-gram Probabilities
+*** B-gram
+- MLE
+\begin{equation*} 
+P(w_i|w_{i-1}) = \frac{c(w_{i-1}w_i)}{w_{i-1}} 
+\end{equation*}
+- More examples: Berkeley Restaurant Project sentences
+*** Practical Issues
+- We do everything in log space
+  - Avoid underflow
+  - (also adding is faster than multiplying)
+*** Language Model Toolkit
+SIRL
+Google N-gram Release, August 2006
+Google Book N-grams
+** Evaluation and Perplexity
+- Does our language model prefer good sentences to bad ones?
+*** Extrinsic evaluation of N-gram models
+*** Difficulty of extrinsic(in-vivo) evaluation of N-gram models
+- Extrinsic evaluation
+  - Time-consuming
+- So
+  - sometimes use intrinsic evaluation: perplexity
+  - Bad approximation
+    - unless the test data looks just like the training data
+    - So generally only useful in pilot experiments
+  - But is helpful to think about
+*** Intuition of Perplexity
+- The Shannon Game:
+  - How well can we predict the next word?
+- The best LM is one that best predicts an unseen test set
+  - Gives the highest P(sentence)
+- Perplexity is the probability of the test set, normalized by the number of words:
+\[ PP(W) = P(w_1w_2\ldots w_N)^{-\frac{1}{N}} \]
+*** Perplexity as branching factor
+- Let's suppose a sentence consisting of random digits
+- What is the perplexity of this sentence according to a model that assign P=1/10 to each digit?
+\[ PP(W) = P(w_1w_2\ldots w_n)^{-\frac{1}{N}} = \frac{1}{10} \]
+The lower the better.
+** Generalization and zeros
+*** The Shannon Visualization Method
+- Choose a random bigram
+  (<s>, w) according to its probability
+- Now choose a random bigram
+  (w, x) according to its probability
+- And so on until we choose </s>
+- Then string the words together
+*** The perils of overfitting
+- N-grams only work well for word prediction if the test corpus looks like the training corpus
+  - In real life, it often doesn't
+  - We need to train robust models that generalize!
+  - One kind of generalization: Zeros!
+    - Things that don't ever occur in the training set
+      - But occur in the test set
+*** Zeros
+- Bigrams with zero probability
+  - mean that we will assign 0 probability to the test set!
+- And hence we cannot compute perplexity (can't divide zero)
+** Smoothing: Add-One
+- Also called Laplace smoothing
+- Pretend we saw each word one more time than we did
+\[ P_{Add-1}(w_i|w_{i-1} = \frac{c(w_{i-1},w_i)+1}{c(w_{i-1}+V)}) \]
+*** Reconstituted counts
+\[ c^*(w_{n-1}w_n) = \frac{[C(w_{n-1}w_n)+1]\times C(w_{n-1})}{C(w_{n-1})+V} \]
+*** Add-1 estimation is a blunt instrument
+- So add-1 isn't used for N-grams:
+  - we'll see better methods
+- But add-1 is used to smooth other NLP models
+  - For text classification
+  - In domains where the number of zeros isn't so huge
+** Interpolation
+Backoff and Interpolation
+- Sometimes it helps to use less context
+  - Condition on less context for contexts you haven't learned much
+- Backoff:
+  - use trigram if you have good evidence
+  - otherwise bigram, otherwise unigram
+- Interpolation:
+  - mix unigram, bigram, trigram
+- Interpolation works better
+*** Linear Interpolation
+  \[ P() = \lambda_1 P()\]
+- Lambdas conditional on context:
+** Good-Turing Smoothing
+More general formulations: Add-K
+\[ P_{Add-k}(w_i|w_{i-1})=\frac{c(w_{i-1}, w_i)}{} \]
+\[ P_{UnigramPrior}(w_i|w_{i-1} = \frac{c()}{}) \]
+*** Advanced smoothing algorithms
+- Intuition used by many smoothing algorithms
+  - Good
++ Notation: N_c = Frequency of frequency c
+ + N_c = the count of things we've seen c times
+*** Good Turing claculations
+\[ P^*_{GT}(things with zero frequency)=\frac{N_1}{N} \]
+- Unseen (bass or catfish)
+  - c = 0
+  - MLE p = 0/18 = 0
+  - P^*_{GT}(unseen) = N_1/N = 3/18
+** Kneser-Ney Smoothing
+Absolute Discounting Interpolation
+- Save ourselves some time and just subtract 0.75 (or some d)
+\[ P_{AbsoluteDiscounting(w_i|w_{i-1}=\frac{}{}}\]
+- (Maybe keeping a couple)
+*** KN Smoothing
+- Better estimate for probabilities of lower-order unigrams!
+  - Shannon game: I can't see without my reading Francisco?
+  - "
+- The unigram is useful exactly when we haven't seen this bigram!
+- Instead of P(w): "How likely is w"
+- P_{continuation}(w):" How likely is w to appear as a novel continuation?
+  - For each word, count the number of bigram types it completes
+  - Every bigram type was a novel continuation the first time it was seen
+ \[ P_{} \propto |{w_{i-1}:c(w_{i-1},w)>0}| \]
+*** Kneser-Ney Smoothing II
+-How many times
+*** Kneser-Ney Smoothing III
+- Alternative metaphor: The number of # of word types seen to precede w
+*** Kneser-Ney Smoothing IV
+\[ P_{KN}(w_i|w_{i-1} = \frac{}{} + \lambda(w_{i-1}P_{Continuation}(w_i)))\]
+*** Kneser-Ney Smoothing: Recursive formulation
+\[\]
+\begin{equation}
+c_{KN}(\dot)
+\end{equation}
+Continuation count = Number of unique single word contexts for \dot

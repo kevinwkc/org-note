@@ -1,0 +1,768 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+<title>Natural-Language-Processing</title>
+<!-- 2014-12-01 Mon 21:36 -->
+<meta  http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<meta  name="generator" content="Org-mode" />
+<meta  name="author" content="Zhiyuan Wang" />
+<style type="text/css">
+ <!--/*--><![CDATA[/*><!--*/
+  .title  { text-align: center; }
+  .todo   { font-family: monospace; color: red; }
+  .done   { color: green; }
+  .tag    { background-color: #eee; font-family: monospace;
+            padding: 2px; font-size: 80%; font-weight: normal; }
+  .timestamp { color: #bebebe; }
+  .timestamp-kwd { color: #5f9ea0; }
+  .right  { margin-left: auto; margin-right: 0px;  text-align: right; }
+  .left   { margin-left: 0px;  margin-right: auto; text-align: left; }
+  .center { margin-left: auto; margin-right: auto; text-align: center; }
+  .underline { text-decoration: underline; }
+  #postamble p, #preamble p { font-size: 90%; margin: .2em; }
+  p.verse { margin-left: 3%; }
+  pre {
+    border: 1px solid #ccc;
+    box-shadow: 3px 3px 3px #eee;
+    padding: 8pt;
+    font-family: monospace;
+    overflow: auto;
+    margin: 1.2em;
+  }
+  pre.src {
+    position: relative;
+    overflow: visible;
+    padding-top: 1.2em;
+  }
+  pre.src:before {
+    display: none;
+    position: absolute;
+    background-color: white;
+    top: -10px;
+    right: 10px;
+    padding: 3px;
+    border: 1px solid black;
+  }
+  pre.src:hover:before { display: inline;}
+  pre.src-sh:before    { content: 'sh'; }
+  pre.src-bash:before  { content: 'sh'; }
+  pre.src-emacs-lisp:before { content: 'Emacs Lisp'; }
+  pre.src-R:before     { content: 'R'; }
+  pre.src-perl:before  { content: 'Perl'; }
+  pre.src-java:before  { content: 'Java'; }
+  pre.src-sql:before   { content: 'SQL'; }
+
+  table { border-collapse:collapse; }
+  caption.t-above { caption-side: top; }
+  caption.t-bottom { caption-side: bottom; }
+  td, th { vertical-align:top;  }
+  th.right  { text-align: center;  }
+  th.left   { text-align: center;   }
+  th.center { text-align: center; }
+  td.right  { text-align: right;  }
+  td.left   { text-align: left;   }
+  td.center { text-align: center; }
+  dt { font-weight: bold; }
+  .footpara:nth-child(2) { display: inline; }
+  .footpara { display: block; }
+  .footdef  { margin-bottom: 1em; }
+  .figure { padding: 1em; }
+  .figure p { text-align: center; }
+  .inlinetask {
+    padding: 10px;
+    border: 2px solid gray;
+    margin: 10px;
+    background: #ffffcc;
+  }
+  #org-div-home-and-up
+   { text-align: right; font-size: 70%; white-space: nowrap; }
+  textarea { overflow-x: auto; }
+  .linenr { font-size: smaller }
+  .code-highlighted { background-color: #ffff00; }
+  .org-info-js_info-navigation { border-style: none; }
+  #org-info-js_console-label
+    { font-size: 10px; font-weight: bold; white-space: nowrap; }
+  .org-info-js_search-highlight
+    { background-color: #ffff00; color: #000000; font-weight: bold; }
+  /*]]>*/-->
+</style>
+<script type="text/javascript">
+/*
+@licstart  The following is the entire license notice for the
+JavaScript code in this tag.
+
+Copyright (C) 2012-2013 Free Software Foundation, Inc.
+
+The JavaScript code in this tag is free software: you can
+redistribute it and/or modify it under the terms of the GNU
+General Public License (GNU GPL) as published by the Free Software
+Foundation, either version 3 of the License, or (at your option)
+any later version.  The code is distributed WITHOUT ANY WARRANTY;
+without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE.  See the GNU GPL for more details.
+
+As additional permission under GNU GPL version 3 section 7, you
+may distribute non-source (e.g., minimized or compacted) forms of
+that code without the copy of the GNU GPL normally required by
+section 4, provided you include this license notice and a URL
+through which recipients can access the Corresponding Source.
+
+
+@licend  The above is the entire license notice
+for the JavaScript code in this tag.
+*/
+<!--/*--><![CDATA[/*><!--*/
+ function CodeHighlightOn(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(null != target) {
+     elem.cacheClassElem = elem.className;
+     elem.cacheClassTarget = target.className;
+     target.className = "code-highlighted";
+     elem.className   = "code-highlighted";
+   }
+ }
+ function CodeHighlightOff(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(elem.cacheClassElem)
+     elem.className = elem.cacheClassElem;
+   if(elem.cacheClassTarget)
+     target.className = elem.cacheClassTarget;
+ }
+/*]]>*///-->
+</script>
+<script type="text/javascript" src="http://orgmode.org/mathjax/MathJax.js"></script>
+<script type="text/javascript">
+<!--/*--><![CDATA[/*><!--*/
+    MathJax.Hub.Config({
+        // Only one of the two following lines, depending on user settings
+        // First allows browser-native MathML display, second forces HTML/CSS
+        //  config: ["MMLorHTML.js"], jax: ["input/TeX"],
+            jax: ["input/TeX", "output/HTML-CSS"],
+        extensions: ["tex2jax.js","TeX/AMSmath.js","TeX/AMSsymbols.js",
+                     "TeX/noUndefined.js"],
+        tex2jax: {
+            inlineMath: [ ["\\(","\\)"] ],
+            displayMath: [ ['$$','$$'], ["\\[","\\]"], ["\\begin{displaymath}","\\end{displaymath}"] ],
+            skipTags: ["script","noscript","style","textarea","pre","code"],
+            ignoreClass: "tex2jax_ignore",
+            processEscapes: false,
+            processEnvironments: true,
+            preview: "TeX"
+        },
+        showProcessingMessages: true,
+        displayAlign: "center",
+        displayIndent: "2em",
+
+        "HTML-CSS": {
+             scale: 100,
+             availableFonts: ["STIX","TeX"],
+             preferredFont: "TeX",
+             webFont: "TeX",
+             imageFont: "TeX",
+             showMathMenu: true,
+        },
+        MMLorHTML: {
+             prefer: {
+                 MSIE:    "MML",
+                 Firefox: "MML",
+                 Opera:   "HTML",
+                 other:   "HTML"
+             }
+        }
+    });
+/*]]>*///-->
+</script>
+</head>
+<body>
+<div id="content">
+<h1 class="title">Natural-Language-Processing</h1>
+<div id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#sec-1">1. Language Modeling</a>
+<ul>
+<li><a href="#sec-1-1">1.1. Introduction to N-grams</a>
+<ul>
+<li><a href="#sec-1-1-1">1.1.1. How to compute P(W)</a></li>
+<li><a href="#sec-1-1-2">1.1.2. How to estimate these probabilities</a></li>
+<li><a href="#sec-1-1-3">1.1.3. Simplest case: Unigram model</a></li>
+<li><a href="#sec-1-1-4">1.1.4. Bigram model</a></li>
+<li><a href="#sec-1-1-5">1.1.5. N-gram models</a></li>
+</ul>
+</li>
+<li><a href="#sec-1-2">1.2. Estimating N-gram Probabilities</a>
+<ul>
+<li><a href="#sec-1-2-1">1.2.1. B-gram</a></li>
+<li><a href="#sec-1-2-2">1.2.2. Practical Issues</a></li>
+<li><a href="#sec-1-2-3">1.2.3. Language Model Toolkit</a></li>
+</ul>
+</li>
+<li><a href="#sec-1-3">1.3. Evaluation and Perplexity</a>
+<ul>
+<li><a href="#sec-1-3-1">1.3.1. Extrinsic evaluation of N-gram models</a></li>
+<li><a href="#sec-1-3-2">1.3.2. Difficulty of extrinsic(in-vivo) evaluation of N-gram models</a></li>
+<li><a href="#sec-1-3-3">1.3.3. Intuition of Perplexity</a></li>
+<li><a href="#sec-1-3-4">1.3.4. Perplexity as branching factor</a></li>
+</ul>
+</li>
+<li><a href="#sec-1-4">1.4. Generalization and zeros</a>
+<ul>
+<li><a href="#sec-1-4-1">1.4.1. The Shannon Visualization Method</a></li>
+<li><a href="#sec-1-4-2">1.4.2. The perils of overfitting</a></li>
+<li><a href="#sec-1-4-3">1.4.3. Zeros</a></li>
+</ul>
+</li>
+<li><a href="#sec-1-5">1.5. Smoothing: Add-One</a>
+<ul>
+<li><a href="#sec-1-5-1">1.5.1. Reconstituted counts</a></li>
+<li><a href="#sec-1-5-2">1.5.2. Add-1 estimation is a blunt instrument</a></li>
+</ul>
+</li>
+<li><a href="#sec-1-6">1.6. Interpolation</a>
+<ul>
+<li><a href="#sec-1-6-1">1.6.1. Linear Interpolation</a></li>
+</ul>
+</li>
+<li><a href="#sec-1-7">1.7. Good-Turing Smoothing</a>
+<ul>
+<li><a href="#sec-1-7-1">1.7.1. Advanced smoothing algorithms</a></li>
+<li><a href="#sec-1-7-2">1.7.2. Good Turing claculations</a></li>
+</ul>
+</li>
+<li><a href="#sec-1-8">1.8. Kneser-Ney Smoothing</a>
+<ul>
+<li><a href="#sec-1-8-1">1.8.1. KN Smoothing</a></li>
+<li><a href="#sec-1-8-2">1.8.2. Kneser-Ney Smoothing II</a></li>
+<li><a href="#sec-1-8-3">1.8.3. Kneser-Ney Smoothing III</a></li>
+<li><a href="#sec-1-8-4">1.8.4. Kneser-Ney Smoothing IV</a></li>
+<li><a href="#sec-1-8-5">1.8.5. Kneser-Ney Smoothing: Recursive formulation</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div id="outline-container-sec-1" class="outline-2">
+<h2 id="sec-1"><span class="section-number-2">1</span> Language Modeling</h2>
+<div class="outline-text-2" id="text-1">
+</div><div id="outline-container-sec-1-1" class="outline-3">
+<h3 id="sec-1-1"><span class="section-number-3">1.1</span> Introduction to N-grams</h3>
+<div class="outline-text-3" id="text-1-1">
+<ul class="org-ul">
+<li>Today's goal: assign a probability to a sentence or a sequence of words:
+\[ P(W) = P(w_1, w_2, w_3, w_4, \ldots, w_n) \]
+</li>
+<li>Related task: probability of an upcoming word:
+\[ P(w_5|w_1, w_2, w_3, w_4) \]
+</li>
+<li>A model that computes either of these:
+\[ P(W) \mbox{ or } P(w_n|w_1,w_2, \ldots, w_{n-1}) \mbox{ is called a language model.}  \]
+</li>
+<li>Better: the grammar. But language model or LM  is starndard.
+</li>
+</ul>
+</div>
+<div id="outline-container-sec-1-1-1" class="outline-4">
+<h4 id="sec-1-1-1"><span class="section-number-4">1.1.1</span> How to compute P(W)</h4>
+<div class="outline-text-4" id="text-1-1-1">
+<ul class="org-ul">
+<li>How to compute this joint probability of P(its, water, is, so, transparent, that)
+</li>
+<li>Intuition: use Chain Rule of Bayes
+</li>
+</ul>
+</div>
+</div>
+<div id="outline-container-sec-1-1-2" class="outline-4">
+<h4 id="sec-1-1-2"><span class="section-number-4">1.1.2</span> How to estimate these probabilities</h4>
+<div class="outline-text-4" id="text-1-1-2">
+<ul class="org-ul">
+<li>just count and divide? 
+<ul class="org-ul">
+<li>No. Too many sentences.
+</li>
+</ul>
+</li>
+<li>Markov Assumption
+<ul class="org-ul">
+<li>Simplifying assumption:
+\[ P(the|\mbox{its water is so transparent that}) \approx P(the|that) \]
+</li>
+<li>Or maybe
+\[ P(the|\mbox{its water is so transparent that}) \approx P(the|transparent\ taht) \]
+</li>
+<li>Formally
+\[ P(w_i|w_1w_2\ldots w_{i-1}) \approx P(w_i)|w_{i-k}\ldots w_{i-1} \]
+</li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div id="outline-container-sec-1-1-3" class="outline-4">
+<h4 id="sec-1-1-3"><span class="section-number-4">1.1.3</span> Simplest case: Unigram model</h4>
+<div class="outline-text-4" id="text-1-1-3">
+<p>
+\[ P(w_1w_2\ldots w_n) \approx \prod\limits_i {P(w_i)} \]
+</p>
+</div>
+</div>
+<div id="outline-container-sec-1-1-4" class="outline-4">
+<h4 id="sec-1-1-4"><span class="section-number-4">1.1.4</span> Bigram model</h4>
+<div class="outline-text-4" id="text-1-1-4">
+<ul class="org-ul">
+<li>Condition on the previous word:
+</li>
+</ul>
+<p>
+\[ P(w_i|w_1w_2\ldots w_{i-1}) \approx P(w_i|w_{i-1}) \]
+</p>
+</div>
+</div>
+<div id="outline-container-sec-1-1-5" class="outline-4">
+<h4 id="sec-1-1-5"><span class="section-number-4">1.1.5</span> N-gram models</h4>
+<div class="outline-text-4" id="text-1-1-5">
+<ul class="org-ul">
+<li>We can extend to trigrams, 4-grams, 5-grams
+</li>
+<li>In general this is an insufficient model of language
+<ul class="org-ul">
+<li>because language has long-distance dependencies:
+</li>
+</ul>
+<p>
+"The computer which I had just put into the machine room on the fifth floor crashed."
+</p>
+</li>
+<li>But we can often get away with N-gram models
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div id="outline-container-sec-1-2" class="outline-3">
+<h3 id="sec-1-2"><span class="section-number-3">1.2</span> Estimating N-gram Probabilities</h3>
+<div class="outline-text-3" id="text-1-2">
+</div><div id="outline-container-sec-1-2-1" class="outline-4">
+<h4 id="sec-1-2-1"><span class="section-number-4">1.2.1</span> B-gram</h4>
+<div class="outline-text-4" id="text-1-2-1">
+<ul class="org-ul">
+<li>MLE
+</li>
+</ul>
+\begin{equation*} 
+P(w_i|w_{i-1}) = \frac{c(w_{i-1}w_i)}{w_{i-1}} 
+\end{equation*}
+<ul class="org-ul">
+<li>More examples: Berkeley Restaurant Project sentences
+</li>
+</ul>
+</div>
+</div>
+<div id="outline-container-sec-1-2-2" class="outline-4">
+<h4 id="sec-1-2-2"><span class="section-number-4">1.2.2</span> Practical Issues</h4>
+<div class="outline-text-4" id="text-1-2-2">
+<ul class="org-ul">
+<li>We do everything in log space
+<ul class="org-ul">
+<li>Avoid underflow
+</li>
+<li>(also adding is faster than multiplying)
+</li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div id="outline-container-sec-1-2-3" class="outline-4">
+<h4 id="sec-1-2-3"><span class="section-number-4">1.2.3</span> Language Model Toolkit</h4>
+<div class="outline-text-4" id="text-1-2-3">
+<p>
+SIRL
+Google N-gram Release, August 2006
+Google Book N-grams
+</p>
+</div>
+</div>
+</div>
+<div id="outline-container-sec-1-3" class="outline-3">
+<h3 id="sec-1-3"><span class="section-number-3">1.3</span> Evaluation and Perplexity</h3>
+<div class="outline-text-3" id="text-1-3">
+<ul class="org-ul">
+<li>Does our language model prefer good sentences to bad ones?
+</li>
+</ul>
+</div>
+<div id="outline-container-sec-1-3-1" class="outline-4">
+<h4 id="sec-1-3-1"><span class="section-number-4">1.3.1</span> Extrinsic evaluation of N-gram models</h4>
+</div>
+<div id="outline-container-sec-1-3-2" class="outline-4">
+<h4 id="sec-1-3-2"><span class="section-number-4">1.3.2</span> Difficulty of extrinsic(in-vivo) evaluation of N-gram models</h4>
+<div class="outline-text-4" id="text-1-3-2">
+<ul class="org-ul">
+<li>Extrinsic evaluation
+<ul class="org-ul">
+<li>Time-consuming
+</li>
+</ul>
+</li>
+<li>So
+<ul class="org-ul">
+<li>sometimes use intrinsic evaluation: perplexity
+</li>
+<li>Bad approximation
+<ul class="org-ul">
+<li>unless the test data looks just like the training data
+</li>
+<li>So generally only useful in pilot experiments
+</li>
+</ul>
+</li>
+<li>But is helpful to think about
+</li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div id="outline-container-sec-1-3-3" class="outline-4">
+<h4 id="sec-1-3-3"><span class="section-number-4">1.3.3</span> Intuition of Perplexity</h4>
+<div class="outline-text-4" id="text-1-3-3">
+<ul class="org-ul">
+<li>The Shannon Game:
+<ul class="org-ul">
+<li>How well can we predict the next word?
+</li>
+</ul>
+</li>
+<li>The best LM is one that best predicts an unseen test set
+<ul class="org-ul">
+<li>Gives the highest P(sentence)
+</li>
+</ul>
+</li>
+<li>Perplexity is the probability of the test set, normalized by the number of words:
+</li>
+</ul>
+<p>
+\[ PP(W) = P(w_1w_2\ldots w_N)^{-\frac{1}{N}} \]
+</p>
+</div>
+</div>
+<div id="outline-container-sec-1-3-4" class="outline-4">
+<h4 id="sec-1-3-4"><span class="section-number-4">1.3.4</span> Perplexity as branching factor</h4>
+<div class="outline-text-4" id="text-1-3-4">
+<ul class="org-ul">
+<li>Let's suppose a sentence consisting of random digits
+</li>
+<li>What is the perplexity of this sentence according to a model that assign P=1/10 to each digit?
+</li>
+</ul>
+<p>
+\[ PP(W) = P(w_1w_2\ldots w_n)^{-\frac{1}{N}} = \frac{1}{10} \]
+The lower the better.
+</p>
+</div>
+</div>
+</div>
+<div id="outline-container-sec-1-4" class="outline-3">
+<h3 id="sec-1-4"><span class="section-number-3">1.4</span> Generalization and zeros</h3>
+<div class="outline-text-3" id="text-1-4">
+</div><div id="outline-container-sec-1-4-1" class="outline-4">
+<h4 id="sec-1-4-1"><span class="section-number-4">1.4.1</span> The Shannon Visualization Method</h4>
+<div class="outline-text-4" id="text-1-4-1">
+<ul class="org-ul">
+<li>Choose a random bigram
+(&lt;s&gt;, w) according to its probability
+</li>
+<li>Now choose a random bigram
+(w, x) according to its probability
+</li>
+<li>And so on until we choose &lt;/s&gt;
+</li>
+<li>Then string the words together
+</li>
+</ul>
+</div>
+</div>
+<div id="outline-container-sec-1-4-2" class="outline-4">
+<h4 id="sec-1-4-2"><span class="section-number-4">1.4.2</span> The perils of overfitting</h4>
+<div class="outline-text-4" id="text-1-4-2">
+<ul class="org-ul">
+<li>N-grams only work well for word prediction if the test corpus looks like the training corpus
+<ul class="org-ul">
+<li>In real life, it often doesn't
+</li>
+<li>We need to train robust models that generalize!
+</li>
+<li>One kind of generalization: Zeros!
+<ul class="org-ul">
+<li>Things that don't ever occur in the training set
+<ul class="org-ul">
+<li>But occur in the test set
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div id="outline-container-sec-1-4-3" class="outline-4">
+<h4 id="sec-1-4-3"><span class="section-number-4">1.4.3</span> Zeros</h4>
+<div class="outline-text-4" id="text-1-4-3">
+<ul class="org-ul">
+<li>Bigrams with zero probability
+<ul class="org-ul">
+<li>mean that we will assign 0 probability to the test set!
+</li>
+</ul>
+</li>
+<li>And hence we cannot compute perplexity (can't divide zero)
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div id="outline-container-sec-1-5" class="outline-3">
+<h3 id="sec-1-5"><span class="section-number-3">1.5</span> Smoothing: Add-One</h3>
+<div class="outline-text-3" id="text-1-5">
+<ul class="org-ul">
+<li>Also called Laplace smoothing
+</li>
+<li>Pretend we saw each word one more time than we did
+</li>
+</ul>
+<p>
+\[ P_{Add-1}(w_i|w_{i-1} = \frac{c(w_{i-1},w_i)+1}{c(w_{i-1}+V)}) \]
+</p>
+</div>
+<div id="outline-container-sec-1-5-1" class="outline-4">
+<h4 id="sec-1-5-1"><span class="section-number-4">1.5.1</span> Reconstituted counts</h4>
+<div class="outline-text-4" id="text-1-5-1">
+<p>
+\[ c^*(w_{n-1}w_n) = \frac{[C(w_{n-1}w_n)+1]\times C(w_{n-1})}{C(w_{n-1})+V} \]
+</p>
+</div>
+</div>
+<div id="outline-container-sec-1-5-2" class="outline-4">
+<h4 id="sec-1-5-2"><span class="section-number-4">1.5.2</span> Add-1 estimation is a blunt instrument</h4>
+<div class="outline-text-4" id="text-1-5-2">
+<ul class="org-ul">
+<li>So add-1 isn't used for N-grams:
+<ul class="org-ul">
+<li>we'll see better methods
+</li>
+</ul>
+</li>
+<li>But add-1 is used to smooth other NLP models
+<ul class="org-ul">
+<li>For text classification
+</li>
+<li>In domains where the number of zeros isn't so huge
+</li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div id="outline-container-sec-1-6" class="outline-3">
+<h3 id="sec-1-6"><span class="section-number-3">1.6</span> Interpolation</h3>
+<div class="outline-text-3" id="text-1-6">
+<p>
+Backoff and Interpolation
+</p>
+<ul class="org-ul">
+<li>Sometimes it helps to use less context
+<ul class="org-ul">
+<li>Condition on less context for contexts you haven't learned much
+</li>
+</ul>
+</li>
+<li>Backoff:
+<ul class="org-ul">
+<li>use trigram if you have good evidence
+</li>
+<li>otherwise bigram, otherwise unigram
+</li>
+</ul>
+</li>
+<li>Interpolation:
+<ul class="org-ul">
+<li>mix unigram, bigram, trigram
+</li>
+</ul>
+</li>
+<li>Interpolation works better
+</li>
+</ul>
+</div>
+<div id="outline-container-sec-1-6-1" class="outline-4">
+<h4 id="sec-1-6-1"><span class="section-number-4">1.6.1</span> Linear Interpolation</h4>
+<div class="outline-text-4" id="text-1-6-1">
+<p>
+\[ P() = \lambda_1 P()\]
+</p>
+<ul class="org-ul">
+<li>Lambdas conditional on context:
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div id="outline-container-sec-1-7" class="outline-3">
+<h3 id="sec-1-7"><span class="section-number-3">1.7</span> Good-Turing Smoothing</h3>
+<div class="outline-text-3" id="text-1-7">
+<p>
+More general formulations: Add-K
+\[ P_{Add-k}(w_i|w_{i-1})=\frac{c(w_{i-1}, w_i)}{} \]
+\[ P_{UnigramPrior}(w_i|w_{i-1} = \frac{c()}{}) \]
+</p>
+</div>
+<div id="outline-container-sec-1-7-1" class="outline-4">
+<h4 id="sec-1-7-1"><span class="section-number-4">1.7.1</span> Advanced smoothing algorithms</h4>
+<div class="outline-text-4" id="text-1-7-1">
+<ul class="org-ul">
+<li>Intuition used by many smoothing algorithms
+<ul class="org-ul">
+<li>Good
+</li>
+</ul>
+</li>
+<li>Notation: N<sub>c</sub> = Frequency of frequency c
+<ul class="org-ul">
+<li>N<sub>c</sub> = the count of things we've seen c times
+</li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div id="outline-container-sec-1-7-2" class="outline-4">
+<h4 id="sec-1-7-2"><span class="section-number-4">1.7.2</span> Good Turing claculations</h4>
+<div class="outline-text-4" id="text-1-7-2">
+<p>
+\[ P^*_{GT}(things with zero frequency)=\frac{N_1}{N} \]
+</p>
+<ul class="org-ul">
+<li>Unseen (bass or catfish)
+<ul class="org-ul">
+<li>c = 0
+</li>
+<li>MLE p = 0/18 = 0
+</li>
+<li>P<sup>*</sup><sub>GT</sub>(unseen) = N<sub>1</sub>/N = 3/18
+</li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div id="outline-container-sec-1-8" class="outline-3">
+<h3 id="sec-1-8"><span class="section-number-3">1.8</span> Kneser-Ney Smoothing</h3>
+<div class="outline-text-3" id="text-1-8">
+<p>
+Absolute Discounting Interpolation
+</p>
+<ul class="org-ul">
+<li>Save ourselves some time and just subtract 0.75 (or some d)
+</li>
+</ul>
+<p>
+\[ P_{AbsoluteDiscounting(w_i|w_{i-1}=\frac{}{}}\]
+</p>
+<ul class="org-ul">
+<li>(Maybe keeping a couple)
+</li>
+</ul>
+</div>
+<div id="outline-container-sec-1-8-1" class="outline-4">
+<h4 id="sec-1-8-1"><span class="section-number-4">1.8.1</span> KN Smoothing</h4>
+<div class="outline-text-4" id="text-1-8-1">
+<ul class="org-ul">
+<li>Better estimate for probabilities of lower-order unigrams!
+<ul class="org-ul">
+<li>Shannon game: I can't see without my reading Francisco?
+</li>
+<li>"
+</li>
+</ul>
+</li>
+<li>The unigram is useful exactly when we haven't seen this bigram!
+</li>
+<li>Instead of P(w): "How likely is w"
+</li>
+<li>P<sub>continuation</sub>(w):" How likely is w to appear as a novel continuation?
+<ul class="org-ul">
+<li>For each word, count the number of bigram types it completes
+</li>
+<li>Every bigram type was a novel continuation the first time it was seen
+</li>
+</ul>
+<p>
+\[ P_{} \propto |{w_{i-1}:c(w_{i-1},w)>0}| \]
+</p>
+</li>
+</ul>
+</div>
+</div>
+<div id="outline-container-sec-1-8-2" class="outline-4">
+<h4 id="sec-1-8-2"><span class="section-number-4">1.8.2</span> Kneser-Ney Smoothing II</h4>
+<div class="outline-text-4" id="text-1-8-2">
+<p>
+-How many times
+</p>
+</div>
+</div>
+<div id="outline-container-sec-1-8-3" class="outline-4">
+<h4 id="sec-1-8-3"><span class="section-number-4">1.8.3</span> Kneser-Ney Smoothing III</h4>
+<div class="outline-text-4" id="text-1-8-3">
+<ul class="org-ul">
+<li>Alternative metaphor: The number of # of word types seen to precede w
+</li>
+</ul>
+</div>
+</div>
+<div id="outline-container-sec-1-8-4" class="outline-4">
+<h4 id="sec-1-8-4"><span class="section-number-4">1.8.4</span> Kneser-Ney Smoothing IV</h4>
+<div class="outline-text-4" id="text-1-8-4">
+<p>
+\[ P_{KN}(w_i|w_{i-1} = \frac{}{} + \lambda(w_{i-1}P_{Continuation}(w_i)))\]
+</p>
+</div>
+</div>
+<div id="outline-container-sec-1-8-5" class="outline-4">
+<h4 id="sec-1-8-5"><span class="section-number-4">1.8.5</span> Kneser-Ney Smoothing: Recursive formulation</h4>
+<div class="outline-text-4" id="text-1-8-5">
+<p>
+\[\]
+</p>
+\begin{equation}
+c_{KN}(\dot)
+\end{equation}
+<p>
+Continuation count = Number of unique single word contexts for \dot
+</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<p class="author">Author: Zhiyuan Wang</p>
+<p class="date">Created: 2014-12-01 Mon 21:36</p>
+<p class="creator"><a href="http://www.gnu.org/software/emacs/">Emacs</a> 24.3.1 (<a href="http://orgmode.org">Org</a> mode 8.2.10)</p>
+<p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
+</div>
+</body>
+</html>
