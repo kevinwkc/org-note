@@ -1,0 +1,761 @@
+* Week 1: Functions & Evaluations
+** Elements of Programming
+call by value: avoid multiple evaluation of the same parameter
+
+call by name: avoid evaluation of unused parameters
+** Evaluation Strategies and Termination
+If CBV evaluation of an expression =e= terminates, then CBN evaluation of =e= terminates, too.
+
+The other direction is not ture.
+#+begin_example
+def first(x: Int, y: Int) = x
+Let's consider: first(1, loop)
+CBN terminates, while CBV loops.
+#+end_example
+
+Scala normally uses call-by-value.
+
+E.g. =def constOne(x: Int, y: => Int) = 1=
+
+"=>" enforce call-by-name
+
+** Conditions and Value Definitions
+def
+
+val
+** Example: square roots with Newton's method
+#+begin_src scala
+def sqrtIter(guess: Double, x:Double): Double =
+  if (isGoodEnough(guss, x)) guess
+  else sqrtIter(improve(guess, x), x)
+#+end_src 
+Recursive functions need an explicit return type in Scala.
+
+For non-recursive functions, the return type is optional
+** Blocks and Lexical Scope
+semicolon is optional
+
+multiple lines
+#+begin_src scala
+(someLongExpression
+  + someOtherExpression)
+#+end_src
+or
+
+#+begin_src scala
+someLongExpression +
+someOtherExpression
+#+end_src
+** Tail Recursion
+Tail recursive function is an iterative process.
+
+In general, if the last action of a function consists of calling a function, one stack frame would be sufficient for both functions. Such calls are called tail-calls.
+
+e.g. gcd
+
+In Scala, only directly recursive calls to the current function are optimized.
+
+One can require that a function is tail-recursive using a =@tailrec= annotation:
+#+begin_src scala
+@tailrec
+def gcd(a: Int, b: Int): Int = ...
+// if gcd is not tail-recursion, compiler will throw an error.
+#+end_src
+
+* Week 2: Higher Order Functions
+** Higher-Order Functions
+Functions that take other functions as argument or return fucntion are called higher-order functions.
+
+#+begin_src scala
+def sum(f: Int => Int, a: Int, b: Int): Int =
+  if (a > b) 0
+  else f(a) + sum(f, a+1,b)
+
+def sumInts(a: Int, b: Int) = sum(id, a, b)
+def sumCubes(a: Int, b: Int) = sum(cube, a, b)
+def sumFactorials(a: Int, b: Int) = sum(fact, a, b)
+
+def id(x: Int): Int = x
+def cube(x: Int): Int = x * x * x
+def fact(x: Int): Int = if (x == 0) 1 else fact(x-1)
+#+end_src
+
+*** Anonymous Function Syntax
+=(x: Int, y: Int) => x + y=
+#+begin_src scala
+def sumInts(a: Int, b: Int) = sum(x => x, a, b)
+def sumCubes(a: Int, b: Int) = sum(x => x * x * x, a, b)
+#+end_src
+** Currying
+- Motivation
+Note from previous example, =a= and =b= get passed unchanged from =sumInts= and =sumCubes= into =sum=.
+
+Can we be even shorter by getting rid of these parameters?
+
+- Functions Returning Functions
+Let's rewrite =sum= as follows.
+#+begin_src scala
+// like java...script
+def sum(f: Int=> Int): (Int, Int) => Int = {
+  def sumF(a: Int, b: Int): Int =
+    if (a > b) 0
+    else f(a) + sumF(a + 1, b)
+  sumF
+}
+#+end_src
+Then we can define:
+#+begin_src scala
+def sumInts = sum(x => x)
+def sumCubes = sum(x => x * x * x)
+def sumFactorials = sum(fact)
+
+sumCubes(1, 10) + sumFactorials(10, 20)
+
+// Consecutive Stepwise Applications
+sum (cube) (1, 10)    // == (sum (cube)) (1, 10)
+#+end_src
+- Multiple Parameter Lists
+Special syntax for functions return functions:
+#+begin_src scala
+// equivalent to the one with the nested sumF function
+def sum(f: Int => Int)(a: Int, b: Int): Int =
+  if (a > b) 0 else f(a) + sum(f)(a + 1, b)
+#+end_src
+- Expansion of Multiple Parameter Lists
+=def f(args_1)...(args_n) = E
+
+where n > 1, is equivalent to
+
+=def f(args_1)...f(args_{n-1}) = {def g(args_n) = E;g}
+
+where =g= is a fresh identifier. Or for short:
+
+=def f(args_1)...(args_{n-1}) = (args_n => E)=
+** Example: Finding Fixed Points
+A number =x= is called a =fixed point= of a function =f= if:
+
+$$f(x) = x$$
+- Return to Square Roots
+=sqrt(x)= is a fixed point of the function =(y => x / y)=
+- Average Damping
+One way to control such oscillations is to prevent the estimation from varying too much. This is done by averaging successive values of the original sequence.
+#+begin_src scala
+def sqrt(x: Double) = fixedPoint(y => (y + x / y) / 2)(1.0)
+#+end_src
+** Scala Syntax Summary
+** Functions and Data
+def a class to represent rational number such as =x/y=
+#+begin_src scala
+class Rational(x: Int, y: Int) {
+  def numer = x
+  def denom = y
+}
+#+end_src
+- Objects
+#+begin_src scala
+new Rationa(1, 2)
+#+end_src
+** More Fun with Rationals
+- Preconditions
+#+begin_src scala
+class Rational(x: Int, y: Int) {
+  require(y > 0, "denominator must be positive")
+  ...
+}
+#+end_src
+
+require is a predefined function.
+
+It takes a condition and an optional message string.
+
+If the condition passed to require is false, an =IllegalArgumentException= is thrown with the given message string.
+- Assertions
+=assert= throws an =AssertionError=.
+  + =require= is used to enforce a precondition on the caller of a function.
+  + =assert= is used as to check the code of the function itself.
+- Constructors
+In Scala,  a class implicitly introduces a constructor(called primary constructor).
+** Evaluation and Operators
+- Operators
+  - Step 1: Infix Notation
+
+     Any method with a parameter can be used like an infix operator.
+#+begin_src scala
+r add s     > r.add(s)
+r less s    > r.less(s)
+r max s     > r.max(s)
+#+end_src
+  - Step 2: Relaxed Identifiers
+
+- Precedence Rules
+The precedence of an operator is determined by its first character.
+#+begin_example
+(all letters)
+|
+^
+&
+< >
+= !
+:
++ -
+\* / %
+(all other special characters)
+#+end_example
+* Week 3: Data and Abstraction
+** Class Hierarchies
+- Abstract Classes
+#+begin_src scala
+abstract class IntSet {
+  def incl(x: Int): IntSet
+  def contains(x: Int): Boolean
+}
+#+end_src
+No object of an abstract calss can be created by =new=.
+
+- Class Extensions
+Let consider implementing sets as binary trees.
+#+begin_src scala
+class Empty extends IntSet {
+  def contains(x: Int): Boolean = false
+  def incl(x: Int): IntSet = new NonEmpty(x, new Empty, new Epty)
+}
+
+class NonEmpty(elem: Int, left: IntSet, right: IntSet) extends IntSet {
+
+  def contains(x: Int): Boolean =
+    if (x < elem) left contains x
+    else if (x > elem) right contains x
+    else true
+
+  def incl(x: Int): IntSet = 
+    if (x < elem) new NonEmpty(elem, left incl x, right)
+    else if (x > elem) new NonEmpty(elem, left, right incl x)
+    else this
+}
+#+end_src
+persistend data structure
+- Something to Ponder
+Dynamic dispatch of methods is analogous to calls to higher-order functions.
+
+Question:
+
+Can we implement one concept in terms of the other?
+
+- Objects in terms of higher-order functions?
+- Higher-order functions in terms of objects?
+** How Classes Are Organized
+You can import from either a package or an object.
+- Automatic Imports
+  - All members of package =scala=
+  - All members of package =java.lang=
+  - All members of the singleton object =scala.Predef=
+For example:
+#+begin_example
+Int      scala.Int
+Boolean  scala.Boolean
+Object   java.lang.Object
+require  scala.Predef.require
+assert   scala.Predef.assert
+#+end_example
+www.scala-lang.org/api/current
+- Traints
+In Java, as well as in Scala, only support single inheritance.
+
+You could use traits. A trait is declared like an abstract class, just with =trait= instead of =abstract class=.
+
+#+begin_src scala
+trait Planar {
+  def height: Int
+  def width: Int
+  def surface = height * width
+}
+#+end_src scala
+
+Classes, objects and traits can inherit from at most one class but arbitrary many traits.
+#+begin_src scala
+class Squre extends Shape with Planar with Movable ...
+#+end_src
+Traits resemble interfaces in Java, but are more powerful because they can contains fields and concrete methods.
+
+On the other hand, traits cannot have (value) parameters, only classes can.
+- The Nothing Type
+=Noting= is at the bottom of Scala's type hierarchy. It is a subtype of every other type.
+
+There is no value of type =Nothing=.
+
+Why is that useful?
+  - To signal abnormal termination
+  - As an element type of empty collections
+
+- Exception
+- The Null Type
+Every reference class type also has =null= as value.
+
+The type of =null= is Null.
+** Polymorphism
+- Value Parameters
+actually a special method like: val1(x1), val2(x2)
+- Type Parameters
+actually template
+- Type Inference
+- Types and Evaluation
+Type parameters do not affect evaluation in Scala.
+
+We can assume that all type parameters and type arguments are removed before evaluating the program.
+
+This is also alled type erasure.
+
+Languages that use type erasure include Java, Scala, Haskell, ML, OCaml.
+
+Some other lanuages keep the type parameters around at run time, these include C++, C#, F#.
+- Polymorphism
+  - the function can be applied to arguments of many types, or
+  - the type can have instances of many types
+We have seen two principal forms of polymorphism:
+  - subtyping: instances of a subclass can be passed to a base class
+  - generics: instances of a function or class are created by type parameterization
+* Week 4: Types and Pattern Matching
+** Functions as Objects
+#+begin_src scala
+package scala
+trait Function1[A, B] {
+  def apply(x: A): B
+}
+#+end_src
+- Expansion of Function Values
+#+begin_src scala
+(x: Int) => x * x
+
+{ class AnonFun extends Function1[Int, Int] {
+    def apply(x: Int) = x * x
+  }
+  new AnonFun
+}
+
+new Function1[Int, Int] {
+  def apply(x: Int) = x * x
+}
+#+end_src
+eta-expansion
+** Subtyping and Generics
+Two main areas of interactions:
+  - bounds
+  - variance
+- Type Bounds
+Consider the method =assertAllPos=.
+#+begin_src scala
+def assertAllPos(s: IntSet): IntSet
+
+def assertAllPos[s <: IntSet](r: S): S = ...
+#+end_src
+Here, ="<: IntSet"= is an =upper bound= of the type parameter =S:=
+
+It means that =S= can be instantiated only to types that conform to =IntSet=.
+
+Generally, the notation
+  - =S <: T= means: =S= is a subtype of =T=, and
+  - =S >: T= means: =S= is a supertype of =T=, or =T= is a subtype of =S=.
+- Mixed Bounds
+=[S >: NonEmpty <: IntSet]=
+- Covariance
+=NonEmpty <: IntSet=
+
+is
+
+=List[NonEmpty] <: List[IntSet]= ?
+
+- Array
+For perspective, let's look at array in Java(and C#)
+
+Arrays in Java are covariant, so one would have:
+#+begin_src scala
+NonEmpty[] <: IntSet[]
+#+end_src
+-Array Typing Problem
+To see why:
+#+begin_src scala
+NonEmpty[] a = new NonEmpty[] {new NonEmpty(1, Empty, Empty)}
+IntSet[] b = a
+b[0] = Empty
+NonEmpty s = a[0]     // ArrayStackException
+#+end_src
+- The Liskov Substitution Principle
+If A <: B, then everything one can to do with a value of type B one should also be able to do with a value of type A.
+
+Scala is not covariant.
+** Objects Everywhere
+** Variance
+Roughly speaking, immutable types can be covariant, if some conditions on methods are met, otherwise not.
+- Definition of Variance
+Scala lets you declare the variance of a type by annotating the type parameter:
+#+begin_src scala
+class C[+A] {...}   // C is covariant
+class C[-A] {...}   // C is contravariant
+class C[A] {...}    // C is nonvariant
+#+end_src
+- Typing Rules for Functions
+If =A2 <: A1= and =B1 <: B2=, then
+  =A1 => B1 <: A2 => B2=
+- Function Trait Declaration
+So functions are contravariant in their argument type(s) and covariant in their result type.
+
+This leads to the following revised definition of the Function1 trait:
+#+begin_src scala
+package scala
+trait Function1[-T, +U] {
+  def apply(x: T): U
+}
+#+end_src
+- Variance Checks
+Now problem...
+
+the covariant type parameter T which appears in parameter position of the method update.
+#+begin_src scla
+class Array[+T] {
+  def update(x: T) ...
+}
+#+end_src
+The Scala compiler will check that there are no problematic combinations when compiling a class with variance annotations.
+** Decomposition
+** Pattern Matching
+The task we are trying to solve is find a general and convenient way to access objects in an extensible class hierarchy.
+
+Attempts seen previously:
+  - Classification and access methods:quadratic explosion
+  - Type tests and casts: unsafe, low-level
+  - Object-oriented decomposition: does not always work, need to touch all classes to add a new method.
+- Solution 2: Functional Decomposition with Pattern Matching
+Observation: the sole purpose of test and accessor functions is to reverse the construction process:
+  - Which subclass was used?
+  - What were the arguments of the constructor?
+This situation is so common that many functional lanuages, Scala included, automate it.
+- Case Classes
+#+begin_src scala
+trait Expr
+case class Number(n: Int) extends Expr
+case class Sum(e1: Expr, e2: Expr) extends Expr
+#+end_src
+It also implicitly defines companion object with =apply= methods.
+#+begin_src scala
+object Number {
+  def apply(n: Int) = new Number(n)
+}
+object Sum {
+  def apply(e1: Expr, e2: Expr) = new Sum(e1, e2)
+}
+#+end_src
+so you can write =Number(1)= instead of =new Number(1)=.
+
+=Pattern matching= is a generalization of =switch= from C/Java to class hierarchies.
+
+It's expressed in Scala using the keyword =match=.
+#+begin_src scala
+def eval(e: Expr): Int = e match {
+  case Number(n) => n
+  case Sum(e1, e2) => eval(e1) + eval(e2)
+}
+#+end_src
+- Match Syntax
+Rules:
+  - =match= is followed by a sequence of cases, =pat => expr=.
+  - Each case associates an expression =expr= with a pattern =pat=.
+  - A =MatchError= exception is thrown if no pattern matches the value of the selector.
+- Forms of Patterns
+  - constructors, e.g. Number, Sum,
+  - variables, e.g. n, e1, e2,
+  - wildcard patterns _,
+  - constants, e.g. 1, true.
+Variables always begin with a lowercase letter.
+
+The same variable name can only appear once in a pattern. So, =Sum(x, x)= is not a legal pattern.
+
+Names of constants begin with a capital letter, with the exception of the reserved words =null, true, false=.
+- Evaluating Match Expressions
+#+begin_src scala
+e match {case p_1 => e_1 ... case p_n => e_n}
+#+end_src
+match the first pattern
+- Pattern Matching and Methods
+Of course, it's also possible to define the evaluation function as a method of the base trait.
+#+begin_src scala
+trait Expr {
+  def eval: Int = this match {
+    case Number(n) => n
+    case Sum(e1, e2) => e1.eval + e2.eval
+  }
+}
+#+end_src 
+** Lists
+construction operation :: (pronounced cons)
+#+begin_src scala
+nums = 1 :: (2 :: (3 :: (4 :: nil)))
+A :: B :: C  // > A :: (B :: C)
+Nil.::(4).::(3).::(2).::(1) // equivalent to the above expression
+#+end_src
+- List Patterns
+#+begin_src scala
+1 :: 2 :: xs    // Lists of that strat with 1 and then 2
+x :: Nil        // Lists of length 1
+List(x)         // Same as x :: Nil
+List()          // The empty list, same as Nil
+List(2 :: xs)   // A list that contains as only element another list that starts with 2
+#+end_src 
+* Week 5: Lists
+** More Functions on Lists
+- Implementation of last
+#+begin_src scala
+// O(n)
+def last[T](xs: List[T]): T = xs match {
+  case List() => throw new Error("last of empty list")
+  case List(x) => x
+  case y :: ys => last(ys)
+}
+#+end_src
+** Pairs and Tuples
+- Sorting Lists Faster
+  merge sort
+#+begin_src scala
+def msort(xs: List[Int]): List[Int] = {
+  val n = xs.length / 2
+  if (n == 0) xs
+  else {
+    def merge(xs: List[Int], ys: List[Int]) = 
+      xs match {
+        case Nil =>
+          ys
+        case x :: xs1 =>
+          ys match {
+            case Nil =>
+              xs
+            case y :: ys1 =>
+              if (x < y) x :: merge(xs1, ys)
+              else y :: merge(xs, ys1)
+          }
+      }
+    val (fst, snd) = xs splitAt n
+    merge(msort(fst), msort(snd)
+  }
+}
+#+end_src
+- SplitAt
+=splitAt= returns two sublists as =pair=.
+- The Tuple Class
+#+begin_src scale
+// a case of TupleN class
+case class Tuple2[T1, T2](_1: +T1, _2: +T2) {
+  override def toString = "(" + _1 + "," + _2 + ")"
+#+end_src
+- Exercise
+Rewrite =merge= using a pattern matching over pairs.
+#+begin_src scala
+def merge(xs: List[Int], ys: List[Int]): List[Int] =
+  (xs, ys) match {
+    case (Nil, ys) => ys
+    case (xs, Nil) => xs
+    case (x :: xs1, y :: ys1) =>
+      if (x > y) x :: merge(xs1, ys)
+      else y :: merge(xs, ys1)
+  }
+#+end_src
+** Implicit Parameters
+- Parameterization of Sort
+#+begin_src scala
+def msort[T](xs: List[T])(lt: (T, T) => Boolean) = {
+  ...
+}
+val fruits = List("apple", "pineapple", "orange", "banana")
+msort(fruits)((x: String, y: String) => x.compareTo(y) < 0)
+#+end_src scala
+- Parameterization with Ordered
+
+=scala.math.Ordering[T]=
+
+We could parameterize with =ordering= instead of specifying =lt= operation directly.
+#+begin_src scala
+import math.Ordering
+
+def msort[T](xs: List[T])(ord: Ordering) =
+  def merge(xs: List[T], ys: List[T]) =
+    ... if (ord.lt(x, y)) ...
+  ... merge(msort(fst)(ord), msort(snd)(ord)) ...
+
+msort(nums, Ordering.Int)
+msort(fruits, Orderding.String)
+#+end_src
+- Aside: Implicit Parameters
+Problem: Passing around =lt= or =ord= values is cumbersome.
+
+So we can use implicit parameter.
+#+begin_src scala
+def msort[T](xs: List[T])(implicit ord: Ordering) =
+  ...
+
+msort(nums)
+msort(fruits)
+#+end_src
+The compiler will figure out the right implicit to pass based on the demanded type.
+** Higher-Order List Functions
+map 
+filter
+** Reduction of Lists
+*** reduceLeft
+- A Shorter Way to Write Functions
+Instead of =((x, y) => x * y)), one can also write shorter:
+
+=(_ * _)=
+
+Every =_= represents a new parameter, going from left to right.
+
+The parametes are defined at the next outer pair of parenthese (or the whole expression if there are no enclosing parentheses).
+
+=def sum(xs: List[Int]) = (0 :: xs) reduceLeft (_ + _)=
+*** foldLeft
+Function =reduceLeft= is defined in terms of a more general function, =foldLeft=.
+
+The difference is that =foldLeft= takes an accumulator z. (when the input is =Nil=, =reduceLeft= will throw an Error while =foldLeft= will return z).
+#+begin_src scala
+def foldLeft[U](z: U)(op: (U, T) => U): U = this match {
+  case Nil => z
+  case x :: xs => (xs foldLeft op(z, x))(op)
+}
+#+end_src
+*** foldRight and reduceRight
+** Reasoning About Concat
+- Laws of Concat
+proof by structure induction
+** A Larger Equational Proof of Lists
+* Week 6:
+** Other Collections
+- other Sequences
+=Vector=
+
+This one has more evenly balanced access patterns than List. (each layer contains 32 elements)
+- Collection Hierarchy
+A common base class of =List= and =Vector= is =Seq=, the class of all swquences.
+
+=Seq= itself is a subclass of =Iterable=.
+- Arrays and Strings
+from Java
+- Ranges
+#+begin_src scala
+val r: Range = 1 util 5 // 1,2,3,4
+val s: Range = 1 to 6   // 1,2,3,4,5
+1 to 10 by 3            // 1,4,7,10
+6 to 1 by -2            // 6,4,2
+#+end_src
+** Combinatorial Search and For-Expression
+=xs flatMap f = (xs map f).flatten=
+- For-Expression Example
+Let =persons= be a list of elements of class =Person=, with fields =name= and =age=.
+#+begin_src scala
+case class Person(name: String, age: Int)
+// To obtain the names of persons over 20 years old, you can write:
+for ( p <- persons if p.age > 20 ) yield p.name
+// which is equivalent to:
+persons filter (p => p.age > 20) map (p => p.name)
+#+end_src
+for-expression like Python's list comprehension
+** Combinatorial Search Example
+- Sets
+- Example: N-Queens
+** Queries with For
+=for= like =select=
+- Generalization of for
+You can use the for syntax for your own types -- you must only define =map=, =flatmap= and =withFilter= for these types.
+
+This is the basis of the Scala data base connection frameworks ScalaQuery and Slick.
+
+Similar ideas underly Microsoft's LINQ.
+** Maps
+#+begin_src scala
+val romanNumerals = Map("I" -> 1, "V" -> 5, "X" -> 10)
+#+end_src
+- Maps are Functions
+Map[Key, Value] extends the type Key => Value
+- Query Maps
+- Sorted and GroupBy
+#+begin_src scala
+fruit sortWith (_.length < _.length)
+fruit.sorted
+
+fruit groupBy (_.head)  //> Map(p -> List(pear, pineapple),
+                                a -> List(apple))
+#+end_src
+- Default Value
+#+begin_src scala
+val cap1 = capitalOfCountry withDefaultValue "<unknown>"
+#+end_src
+** Putting the Pieces Together
+* Week 7: Lazy Evaluation
+** Structural Induction on Trees
+** Steams
+- Delayed Evaluation
+Streams is similar to list, but its trail is only evaluated on demand.
+- Defining Steams
+Streams are defined from a constant =Steam.empty= and a constructor =Stream.cons=.
+
+For instance,
+
+=val xs = Steam.cons(1, Stream.cons(2, Stream.empty))=
+
+They can also be defined like the other collections by using the object =Stream= as a factory.
+
+=Stream(1, 2, 3)=
+
+The =toStream= method on a collection with turn the collection into a stream:
+
+=(1 to 1000).toStream=
+- Methods on Streams
+=((1 to 1000).toStream filter isPrime)(1)=
+- Stream Cons Operator
+=x :: xs= always produces a list, never a stream
+
+There is however an alternative operator =#::= which produces stream.
+
+=#::= can be used in expressions as well as patterns.
+- Implementation of Stream
+** Lazy Evaluation
+The proposed implementation suffers from a serious potential performance problem: If =tail= is called several times, the corresponding stream will be recomputed each time.
+
+This problem can be avoided by stroing the result of the first evaluation of =tail= and re-using the stored result instead of recomputing =tail=.
+
+This optimization is sound, since in purely functional language an expression produces the same result each time it is evaluated.
+
+The scheme is called /lazy evalutaion/ (as opposed to /by-name-evaluation/ in the case where everything is recomputed, and /strict evaluation/ for normal parameters and =val= definitions.)
+- Lazy Evaluation in Scala
+Haskell is a functional programming language that uses lazy evaluation by default.
+
+Scala uses strict evaluation by default, but allows lazy evaluation of value definitions with the =lazy val= form:
+
+=lazy val x = expr=
+- Computing with infinite Sequences
+- Infinite Streams (like lisp)
+#+begin_src scala
+def from(n: Int): Stream[Int] = n #:: from(n+1) 
+#+end_src
+- The Sieve of Eratosthenes
+** Case Study: the Water Pouring Problem
+Udacity: Design Computer Programs: Principles
+- States and Moves
+Glass: =Int=
+
+State: =Vector[Int]= (one entry per glass)
+
+Moves: 
+  =Empty(glass)=
+  =Fill(glass)=
+  =Pour(from, to)=
+** Course Conclusion
+- What Covered?
+  - higher-order functions 
+  - case classes and pattern matching
+  - immutable collections
+  - absence of mutable state
+  - flexible evaluation strategies: /strict/lazy/by name/.
+- What Remains to Be Covered?
+  - Parallelism
+  - Domain-Specific Languages
+- More
+  - Scala Tour
+  - Typesafe Blog and Newsletter
+  - Scala Meetup
