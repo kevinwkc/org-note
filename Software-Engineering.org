@@ -1,0 +1,86 @@
+# Berkeley CS169 Engineering Software (as a Service)
+# TO edit a link use C-c C-l
+** Welcome
+[[bit.ly/cs169-multitasking][Multitasking Damages Your Brain And Career, New Studies Suggest]]
+- Service-Oriented Architecture (SOA)
+  - make it easier to reuse current code to create new apps
+- Cloud Computing
+- Legacy SW vs. Beautiful SW
+  - 60% SW maintenance costs adding new func to legacy SW
+  - 17% for fixing bugs
+  - Meet customers' needs!
+- Software Quality
+- Testing
+  - System (acceptance) test: integrated program meets its sepcifications
+  - Integration test: interfaces between units have consistent assumptions, communicate correctly
+  - Module (functional) test
+  - Unit test
+** Productivity
+*** Agile lifecycle (embrace change) VS. Plan and Documentation
+*** Scrum
+- Scrum: Team Organization
+   - alternative to one manager hierarchy
+   - "2 Pizza" team size (4 to 9 people)
+   - inspired by frequent short meetings
+     - 15 minutes every day at same place and time
+     - To learn more: /Agile Software Development with Scrum/
+- Daily Scrum Agenda
+  - Answers 3 questions at "daily scrums".
+    - What have you done since yesterday?
+    - What are you planning to do today?
+    - Are there any impediments or stumbling blocks?
+  - Help individuals by identify what they need
+- Scrum role
+  - Team: 2-pizza size team that delivers Software
+  - ScrumMaster: team member who
+    - Acts as buffer between the Team and external distractions
+    - Keeps team focused on task at hand
+    - Enforces team rules (coding standard)
+    - Removes impediments that prevent team from making progress
+  - Product Owner: A team member (not the ScrumMaster) who represents the voice of the customer and prioritizes user stories
+- Resolving Conflicts
+  - e.g. Different view on right technical direction
+  1. First list all items on which the sides agree
+    - vs. starting with list of disagreements
+    - Discover closer together than they realize?
+  2. Each side articulates the other's arguments, even if don't agree with some
+    - Avoids confusion about terms or assumptions, which may be real cause of conflict
+  3. Constructive confrontation (Intel)
+    - If you have a strong opinion that a person is proposing the wrong thing technically, you are obligated to bring it up, even to your bosses
+  4. Disagree and commit (Intel)
+    - Once decision made, need to embrace it and move ahead
+    - "I disagree, but I am going to help even if I don't agree."
+- Scrum Summary 
+  - Basically, self-organizing small team with daily short standup meetings
+  - Work in "sprints" of 2-4 weeks
+  - Suggest members rotate through roles (especially Product Owner) each iteration
+*** Pair Programming
+- PP
+  - Goal: improve software quality, reduce time to completion by having 2 people develop the same code
+  - *Driver* enters code and thinks tactically about how to complete the current task, explaining thoughts while typing
+  - *Observer* reviews each line of code as typed in, and act as safety net for the driver
+  - *Observer* thinking strategically about future problems, makes suggestions to driver
+  - Should be lots of talking and concentration
+  - Pair alternate roles
+- PP Evaluation
+  - PP quicker when task complexity is low
+  - PP yield higher quality when high
+    - Anecdotally, sometimes more readable code too
+  - But more effort than solo programmers?
+  - Also transfers knowledge between pair
+    - programming idioms, tool tricks, company process, latest technologies, ...
+    - Some teams purposely swap /partners/ per task => eventually everyone is paired ("promiscuous pairing")
+** Intro to RSpec & Unit Tests
+- Testing Today/Agile
+  - testing is part of every Agile iteration
+  - developers test their own code
+  - testing tools & processes highly automated
+  - QA/testing group imporves testability & tools
+- BDD + TDD
+  - Behavior-driven design (BDD)
+    - develop user stories (features you with to had) to describe hwo app will work
+    - via [[https://en.wikipedia.org/wiki/Cucumber_(software)][Cucumber]], user stories become acceptance tests and integration tests
+  - Test-driven development (TDD)
+    - step definitions for new story, may require new code to be written
+    - TDD says: write unit & functional tests for that code first, before the code itself
+- Cucumber & RSpec
