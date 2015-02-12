@@ -70,6 +70,16 @@
   - Also transfers knowledge between pair
     - programming idioms, tool tricks, company process, latest technologies, ...
     - Some teams purposely swap /partners/ per task => eventually everyone is paired ("promiscuous pairing")
+- Do's & Don'ts
+  - *Don't* fiddle with your smartphone when you are the observer
+  - *Do* consider pairing with someone of different experience level -- you'll both learn!
+    - Explaining is a great way to better understand
+  - *Do* swap frequently -- learning goes both ways, and roles exercise different skills
+    - Observer gain skill of explaining his/her thought process to Driver
+- PP Continue
+  - "Helped avoid silly mistakes that could take a long time to debug"
+  - "changing partners frequently made team more cohesive"
+
 ** Intro to RSpec & Unit Tests
 - Testing Today/Agile
   - testing is part of every Agile iteration
