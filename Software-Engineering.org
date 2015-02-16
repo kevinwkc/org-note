@@ -1,7 +1,8 @@
 # Berkeley CS169 Engineering Software (as a Service)
 # TO edit a link use C-c C-l
+* Intro to Software Engineering (Week 0)
 ** Welcome
-[[bit.ly/cs169-multitasking][Multitasking Damages Your Brain And Career, New Studies Suggest]]
+ [[bit.ly/cs169-multitasking][Multitasking Damages Your Brain And Career, New Studies Suggest]]
 - Service-Oriented Architecture (SOA)
   - make it easier to reuse current code to create new apps
 - Cloud Computing
@@ -21,6 +22,7 @@
   - *Test Coverage*: % of code paths tested
   - *Regression* testing: automatically rerun old tests so changes don't break what used to work
   - Continuous Integration (CI) testing: continuous regression testing on each code check-in vs. later testing phase
+* Plan & Document vs Agile and Ruby intro (Week 1)
 ** Productivity
 *** Agile lifecycle (embrace change) VS. Plan and Documentation
 *** Scrum
@@ -106,6 +108,7 @@ class SavingsAccount < Account    # inheritance
   def self.bank_name  # same as def SavingsAccount.bank_name
     @@bank_name
 #+END_SRC
+* More Ruby (Week 2)
 ** All Programming is Mataprogramming
 - Metaprogramming & Reflection
   - /Reflection/ lets us ask an object questions about itself and have it modify itself
@@ -163,8 +166,72 @@ end
     =class A ; include MyModule ; end=
     - =A.foo= will search =A=, then =MyModule=, then =method_missing= in =A= & =B=, then =A='s ancestor
     - =sort= is actually defined in module =Enumerable=, which is /mixed into/ Array by default
+- A Mix-in is a Contract
+  - Example: =Enumerable= assumes target object responds to =each=
+  - ...provides =all?, any?, collect, find, include?, inject, map, partition=, ...
+  - =Enumeralbe= also provides =sort=, which requires /elements/ of collection (things returned by =each=) to respond to =<=>=
+  - =Comparable= assumes that target object responds to =<=>(other_thing)=
+    - provides ~< <= => > == between?~ for free
+_Class_ of Objects doesn't matter: only _methods_ to which they respond
+- Example: sorting a file
+  - Sorting a file
+    - =File.open= returns an =IO= object
+    - =IO= objects respond to =each= by returning each line as a =String=
+  - So we can say
+    =File.open('filename.txt').sort=
+    - relies on =IO#each= and =String#<=>= 
+  - Which lines of file begin with vowel?
+    =File.open('file').select {|s| s =~ /^[aeiou]/i }=
+** Yield（）
+#+BEGIN_SRC ruby
+class RandomSequence
+  def initialize(limit, num)
+    @limit, @num = limit, num
+  end
+  def each
+    @num.times { yield (rand * @limit).floor }
 
-** Yield
+i = -1
+RandomSequence.new(10,4).each do |num|
+  i = num if i < num
+end
+#+END_SRC
+- Iterators are just one nifty use of yield
+#+BEGIN_SRC ruby
+# in FIle class
+def open(filename)
+  ...open a file...
+end
+def close
+  ...close a file...
+end
+# in your code
+def do_everything
+  f = File.open("foo")
+  my_custom_stuff(f)
+  f.close()
+end
+#+END_SRC
+Without yield(): expose 2 calls in other library
+#+BEGIN_SRC ruby
+# in some other library
+def open(filename)
+  ...before code...
+  yield file_descriptor
+  ...after code...
+end
+
+# in your code
+def do_everything
+  File.open("foo") do |f|
+    my_custom_stuff(f)
+  end
+end
+#+END_SRC
+With yield(): expose 1 call in other library
+- [[https://courses.edx.org/courses/BerkeleyX/CS_CS169.1x/1T2014/courseware/3c6b0f9dc9ee45d0a8f33cd1a212b449/e911545863dc4b5b944e433f15f4fd1b/][Pro Tips from Aaron Patterson]]
+
+* Intro to BDD & TDD (Week 2)
 ** Intro to RSpec & Unit Tests
 - Testing Today/Agile
   - testing is part of every Agile iteration
@@ -179,3 +246,10 @@ end
     - step definitions for new story, may require new code to be written
     - TDD says: write unit & functional tests for that code first, before the code itself
 - Cucumber & RSpec
+#+begin_src ditaa :file ditaa-seqboxes.png
+/-------------\
+|cRED         |
+|Failing (red)|
+|Cucumber step|
+\-------------/
+#+end_src
