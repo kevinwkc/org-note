@@ -148,7 +148,7 @@ end
 - What is "duck typing"?
   - If it responds to the same methods as a duck...it might as well be a duck
   - Similar to Java Interfaces but easier to use
-  - #+BEGIN_EXAMPLE 
+    #+BEGIN_EXAMPLE 
     my_list.sort
     [5, 4, 3].sort
     ["dog", "cat", "rat"].sort
@@ -160,9 +160,9 @@ end
     - you can't instantiate it
     - Some modules are namespaces, similar to Python: `Math::sin(Math::PI / 2.0)`
   - Important use of modules: mix its methods into a class:
-    `class A ; include MyModule ; end`
-    - `A.foo` will search `A`, then `MyModule`, then `method_missing` in `A` & `B`, then `A`'s ancestor
-    - `sort` is actually defined in module `Enumerable`, which is /mixed into/ Array by default
+    =class A ; include MyModule ; end=
+    - =A.foo= will search =A=, then =MyModule=, then =method_missing= in =A= & =B=, then =A='s ancestor
+    - =sort= is actually defined in module =Enumerable=, which is /mixed into/ Array by default
 
 ** Yield
 ** Intro to RSpec & Unit Tests
