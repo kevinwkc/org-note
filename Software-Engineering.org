@@ -13,8 +13,14 @@
 - Testing
   - System (acceptance) test: integrated program meets its sepcifications
   - Integration test: interfaces between units have consistent assumptions, communicate correctly
-  - Module (functional) test
+  - Module (functional) test: across individual units
   - Unit test
+- More Testing
+  - *Black box* vs. *White Box* testing
+    - Testing based on specs vs. on implementation
+  - *Test Coverage*: % of code paths tested
+  - *Regression* testing: automatically rerun old tests so changes don't break what used to work
+  - Continuous Integration (CI) testing: continuous regression testing on each code check-in vs. later testing phase
 ** Productivity
 *** Agile lifecycle (embrace change) VS. Plan and Documentation
 *** Scrum
@@ -80,6 +86,85 @@
   - "Helped avoid silly mistakes that could take a long time to debug"
   - "changing partners frequently made team more cohesive"
 
+** Ruby OOP
+#+BEGIN_SRC ruby
+class SavingsAccount < Account    # inheritance
+  # constructor used when SavingsAccount.new(...) called
+  def initialize(balance=0)  # optional argument
+    @balance = balance  # note instance vs local variable
+  end
+  def balance  # instance method
+    @balance  # instance var: visible only to _this object_ (no public var)
+  end
+  def balance=(new_amount)  # note method name: like setter
+    @balance = new_amount
+  end
+  def deposit(amount)
+    @balance += amount
+  end
+  @@bank_name = "MyBank.com"     # class (static) var
+  def self.bank_name  # same as def SavingsAccount.bank_name
+    @@bank_name
+#+END_SRC
+** All Programming is Mataprogramming
+- Metaprogramming & Reflection
+  - /Reflection/ lets us ask an object questions about itself and have it modify itself
+  - /Metaprogramming/ lets us define new code at runtime
+- An international bank account
+#+BEGIN_SRC ruby
+acct.deposit(100)    # deposit $100
+acct.deposit(20.euros) 
+# No problem with open classes....
+class Numeric
+  def euros ; self * 1.292 ; end
+end
+# But what about
+# acct.deposit(1.euro)
+class Numeric
+  @@currencies = {'yen' => 0.013, 'euro' => 1.292, 'rupee' => 0.019}
+  def method_missing(method_id, *args, &block)    # capture all args in case have to call super
+    singular_currency = method_id.to_s.gsub(/s$/, '')
+    if @@currencies.has_key?(singular_currency)
+      self * @@currencies[singular_currency]
+    else
+      super
+    end
+  end
+end
+#+END_SRC
+- Reflection & Metaprogramming
+  - You can ask Ruby objects questions about themselves at runtime (introspection)
+  - You can use this information to generate new code (methods, objects, classes) at runtime (reflection)
+  - ... so can have code that writes code (metaprogramming)
+  - You can "reopen" any class at any time and add stuff to it
+    - ...in addition to extending/subclassing it!
+** Mixins and duck typing
+- So what if you're not my type
+  - Ruby emphasizes
+    "What methods do you respond to?"
+  - over
+    "What class do you belong to?"
+  - How does this encourage productivity through reuse?
+- What is "duck typing"?
+  - If it responds to the same methods as a duck...it might as well be a duck
+  - Similar to Java Interfaces but easier to use
+  - #+BEGIN_EXAMPLE 
+    my_list.sort
+    [5, 4, 3].sort
+    ["dog", "cat", "rat"].sort
+    [:a, :b, :c].sort
+    IO.readlines("my_file").sort
+    #+END_EXAMPLE
+- Modules
+  - Collection of methods that aren't a class
+    - you can't instantiate it
+    - Some modules are namespaces, similar to Python: `Math::sin(Math::PI / 2.0)`
+  - Important use of modules: mix its methods into a class:
+    `class A ; include MyModule ; end`
+    - `A.foo` will search `A`, then `MyModule`, then `method_missing` in `A` & `B`, then `A`'s ancestor
+    - `sort` is actually defined in module `Enumerable`, which is /mixed into/ Array by default
+
+** Yield
 ** Intro to RSpec & Unit Tests
 - Testing Today/Agile
   - testing is part of every Agile iteration
