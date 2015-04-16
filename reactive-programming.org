@@ -1,0 +1,53 @@
+* Week 1
+** What is Reactive Programming?
+- New era of computation need new architecture
+  - *Previously*: Managed servers and containers.
+  - *Now*: Reactive applications
+    + event-driven (React to events)
+    + scalable (React to load)
+    + resilient (React to failures)
+    + responsive (React to usersxs)
+- Event-Driven
+  - *Traditionally*: Systems are composed of multiple threads, which communicate with shared, synchronized state.
+    + Strong coupling, hard to compose.
+  - *Now*: Systems are composed from loosely coupled event handlers.
+    + Events can be handled asynchronously, without blocking.
+- Scalable
+    - scale up: using parallelism of multi-core
+    - scale out: using multiple server ndoes
+  - Important for scalability: Minimize shared mutable state.
+  - Important for scale out: Location transparency, resilience.
+- Resilient
+  - An application is *resilient* if it can recover quickly from failures (software, haredware or connection failures).
+  - Typically, resilience cannot be added as an afterthought; it needs to be part of the design from the beginning. Needed:
+    - loose coupling
+    - strong encapsulation of state
+    - pervasive supervisor hierarchies
+- Responsive
+  An application is *responsive* if it provides rich, real-time interaction with its users even under load and in the presence of failures.
+
+  Responsive applications can be built on an event-driven, scalable, and resilient architecture.
+
+  Still need careful attention to algorithms, system design, back-pressure, and many other details.
+- Call-backs
+  -  Handling events is often done using call-backs. E.g. using Java observers:
+#+begin_src scala
+class Counter extends ActionListener {
+  private var count = 0
+  button.addActionListener(this)
+  
+  def actionPerformed(e: ActionEvent): Unit = {
+    count += 1
+  }
+}
+#+end_src
+  - Problems
+    - needs shared mutable state (here is =count=)
+    - cannot be composed
+    - leads quickly to "call-back hell"
+- How To Do Better
+  - Use fundamental constructions from functional programming to get *composable* event abstractions.
+    - Events are first class
+    - Events are often represented as messages
+    - Handlers of events are also first-class
+    - Complex handlers can be composed from primitive ones
