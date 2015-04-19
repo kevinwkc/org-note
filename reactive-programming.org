@@ -52,6 +52,8 @@ class Counter extends ActionListener {
     - Handlers of events are also first-class
     - Complex handlers can be composed from primitive ones
 ** Recap: Functions and Pattern Matching
+- Recap: Case Classes
+Case classes are Scala's preferred way to define complex data.
 - Representation of JSON in Scala
 #+begin_src scala
 abstract class JSON
@@ -62,7 +64,6 @@ case class JStr  (str: String)                 extends JSON
 case class JBool (b: Boolean)                  extends JSON
 case object JNull                              extends JSON
 #+end_src
-#+NAME: Example
 #+begin_src scala
 val data = JObj(Map(
   "firstName" -> JStr("John"),
@@ -80,3 +81,94 @@ val data = JObj(Map(
       "type" -> JStr("fax"), "number" -> JStr("646 555-4567")
    )) )) ))
 #+end_src scala
+- Pattern Matching
+Here's a method that returns the string representation JSON data:
+#+begin_src scala
+def show(json: JSON): String = json match {
+  case JSeq(elems) =>
+    "[" + (elems map show mkString ",") + "]"
+  case JObj(bindings) =>
+    val assocs = bindings  map {
+      case (key, value) => "\"" + key + "\": " + show(value)
+    }
+    "{" + (assocs mkString ", ") + "}"
+  case JNum(num) => num.toString
+  case JStr(str) => '\"' + str + '\"'
+  case JBool(b)  => b.toString
+  case JNull     => "null"
+}
+#+end_src scala
+- Functions Are Objects
+In Scala, every concrete type is the type of some class or trait.
+
+The function type is no exception. A type like
+
+src_scala{JBinding => String}
+
+is just a shorthand for
+
+src_scala{scala.Function1[JBinding, String]}
+
+where =scala.Function1= is a trait and =JBinding= and =String= are its type arguments.
+- The Function1 Trait
+Here's an outline of that =Function1=:
+#+begin_src scala
+trait Function[-A, +R] {
+  def apply(x: A): R
+}
+#+end_src 
+The pattern matching block
+#+begin_src scala
+{ case (key, value)=> key + ": " + value }
+#+end_src
+expands to the =Function1= instance
+#+begin_src scala
+new Function1[JBinding, String] {
+  def apply(x: JBinding) = x match {
+    case (key, value) => key + ": " + show(value)
+  }
+}
+#+end_src
+- Subclassing Functions
+One nice aspect of functions being traits is that we can subclass the function type.
+
+For instance, maps are functions from keys to values:
+
+src_scala{trait Map[Key, Value] extends (Key => Value) ...}
+
+Sequences are functions from =int= indices to values:
+
+src_scala{trait Seq[Elem] extends Int => Elem}
+
+That's why we can write
+
+=elems(i)=
+
+for sequence (and array) indexing.
+- Partial Functions
+#+begin_src scala
+val f: PartialFunction[String, String] = { case "ping" => "pong"}
+f.isDefinedAt("ping")    // true
+f.isDefinedAt("pong")    // false
+#+end_src
+The partial function trait is defined as follows:
+#+begin_src scala
+trait PartialFunction[-A, +R] extends Function1[-A, +R] {
+  def apply(x: A): R
+  def isDefinedAt(x: A): R
+}
+#+end_src
+- Partial Function Objects
+If the expected type is a =PartialFunction=, the Scala compiler willl expand src_scala{{ case "ping" => "pong" }}
+
+as follows:
+#+begin_src scala
+new PartialFunction[String, String] {
+  ...
+  def isDefinedAt(x: String) = x match {
+    case "ping" => true
+    case _ => false
+  }
+}
+#+end_src
+Note: =isDefinedAt= will only be determined by the outmost pattern
