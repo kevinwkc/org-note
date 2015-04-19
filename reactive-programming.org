@@ -102,13 +102,13 @@ def show(json: JSON): String = json match {
 In Scala, every concrete type is the type of some class or trait.
 
 The function type is no exception. A type like
-
-src_scala{JBinding => String}
-
+#+begin_src scala
+JBinding => String
+#+end_src
 is just a shorthand for
-
-src_scala{scala.Function1[JBinding, String]}
-
+#+begin_src scala
+scala.Function1[JBinding, String]
+#+end_src
 where =scala.Function1= is a trait and =JBinding= and =String= are its type arguments.
 - The Function1 Trait
 Here's an outline of that =Function1=:
@@ -133,13 +133,13 @@ new Function1[JBinding, String] {
 One nice aspect of functions being traits is that we can subclass the function type.
 
 For instance, maps are functions from keys to values:
-
-src_scala{trait Map[Key, Value] extends (Key => Value) ...}
-
+#+begin_src scala
+trait Map[Key, Value] extends (Key => Value) ...
+#+end_src
 Sequences are functions from =int= indices to values:
-
-src_scala{trait Seq[Elem] extends Int => Elem}
-
+#+begin_src scala
+trait Seq[Elem] extends Int => Elem
+#+end_src
 That's why we can write
 
 =elems(i)=
@@ -159,7 +159,7 @@ trait PartialFunction[-A, +R] extends Function1[-A, +R] {
 }
 #+end_src
 - Partial Function Objects
-If the expected type is a =PartialFunction=, the Scala compiler willl expand src_scala{{ case "ping" => "pong" }}
+If the expected type is a =PartialFunction=, the Scala compiler willl expand ={ case "ping" => "pong" }=
 
 as follows:
 #+begin_src scala
