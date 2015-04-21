@@ -412,7 +412,7 @@ We have seen that monad-typed expressions are typically written as for expressio
 
 What is the significance of the laws with respect to this?
 
-1. Associativity says essentially that one can "inline" nested for expressions:
+1.Associativity says essentially that one can "inline" nested for expressions:
 #+begin_src scala
    for (y <- for (x <- m; y <- f(x)) yield y
         z <- g(y)) yield z
@@ -420,12 +420,12 @@ What is the significance of the laws with respect to this?
         y <- f(x)
         z <- g(y)) yield z
 #+end_src
-2. Right unit says:
+2.Right unit says:
 #+begin_src scala
    for (x <- m) yield x
 == m
 #+end_src
-3. Left unit does not have an analogue for for-expression.
+3.Left unit does not have an analogue for for-expression.
 *** Another type: =Try=
 In the later parts of this course we will need a type named =Try=.
 
@@ -479,3 +479,19 @@ So, for a =Try= value =t=,
 t map f == t flatMap (x => Try(f(x)))
         == t flatMap (f andThen Try)
 #+end_src
+*** Is =Try= a Monad?
+It turns out the left unit law fails.
+#+begin_src scala
+Try(expr) flatMap f != f(expr)
+#+end_src
+Indeed the left-hand side will never raise a non-fatal exception whereas the right-hand side will raise any exception thrown by =expr= of =f=.
+
+Hence, =Try= trades one monad law for another law which is more useful in this context:
+#+begin_center
+/An expression composed from 'Try', 'map', 'flatMap' will never throw a non-fatal exception./
+#+end_center
+Call this the "bullet-proof" principle.
+*** Conclusion
+Many of the types defining =flatMap= are monads. (If they also define =withFilter=, they are called "monads with zero").
+
+The three monad laws give useful guidance in the design of library APIs.
