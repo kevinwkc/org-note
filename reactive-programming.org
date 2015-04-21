@@ -364,15 +364,15 @@ To qualify as a monad, a type has to satisfy three laws:
 *Associativity:*
 #+begin_src scala
 m flatMap f flatMap g == m flatMap (x => f(x) flatMap g)
-#end_src
+#+end_src
 *Left unit*
 #+begin_src scala
 unit(x) flatMap f == f(x)
-#end_src
+#+end_src
 *Right unit*
 #+begin_src scala
 m flatMap unit == m
-#end_src
+#+end_src
 *** Checking Monad Laws
 Let's check the monad laws for =Optbion=.
 
@@ -384,7 +384,7 @@ abstract class Option[+T] {
     case None => None
   }
 }
-#end_src
+#+end_src
 *** Checking the Left Unit Law
 #+begin_src scala
    Some(x) flatMap f
@@ -393,7 +393,7 @@ abstract class Option[+T] {
      case None => None
    }
 == f(x)
-#end_src
+#+end_src
 *** Chekcing the Right Unit Law
 #+begin_src scala
    opt flatMap Some
@@ -402,11 +402,11 @@ abstract class Option[+T] {
      case None => None
    }
 == opt
-#end_src
+#+end_src
 *** Checking the Associative Law
 #+begin_src scala
 opt flatMap f flatMap g
-#end_src
+#+end_src
 *** Significance of the Laws for For-Expressions
 We have seen that monad-typed expressions are typically written as for expressions.
 
@@ -419,12 +419,12 @@ What is the significance of the laws with respect to this?
 == for (x <- m;
         y <- f(x)
         z <- g(y)) yield z
-#end_src
+#+end_src
 2. Right unit says:
 #+begin_src scala
    for (x <- m) yield x
 == m
-#end_src
+#+end_src
 3. Left unit does not have an analogue for for-expression.
 *** Another type: =Try=
 In the later parts of this course we will need a type named =Try=.
@@ -434,7 +434,7 @@ In the later parts of this course we will need a type named =Try=.
 abstract class Try[+T]
 case class Success[T](x: T}       extends Try[T]
 case class Failure(ex: Exception) extends Try[Noting]
-#end_src
+#+end_src
 =Try= is used to pass results of computations that can fail with an exception between threads and computers.
 *** Creating a Try
 You can wrap up an arbitrary computation in a Try.
@@ -449,7 +449,7 @@ object Try {
     catch {
       case NonFatal(ex) => Failure(ex)
     }
-#end_src
+#+end_src
 *** Composing =Try=
 Just like with =option=, =Try=-valued computations can be composed in for-expressions.
 #+begin_src scala
@@ -457,7 +457,7 @@ for {
   x <- computeX
   y <- computeY
 } yield f(x, y)
-#end_src
+#+end_src
 If =computeX= and =computeY= succeed with results =Success(x)= and =Success(y)=, this will return =Success(f(x, y)).
 
 If either computation fails with an exception =ex=, this will return =Failure(ex)=.
@@ -473,9 +473,9 @@ abstract class Try[T] {
     case Success(x) => Try(f(x))
     case fail: Failure => fail
   }}
-#end_src 
+#+end_src 
 So, for a =Try= value =t=,
 #+begin_src scala
 t map f == t flatMap (x => Try(f(x)))
         == t flatMap (f andThen Try)
-#end_src
+#+end_src
