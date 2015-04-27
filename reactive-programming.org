@@ -495,3 +495,336 @@ Call this the "bullet-proof" principle.
 Many of the types defining =flatMap= are monads. (If they also define =withFilter=, they are called "monads with zero").
 
 The three monad laws give useful guidance in the design of library APIs.
+* Week 2
+** Functions and State
+*** Observation of Subsititution
+Rewriting can be done anywhere in a term, and all rewritings which terminate lead to the same solution.
+
+This is an important result of the \lambda -calculus, the theory behind functional programming.
+*** Stateful Objects
+One normally describes the world as a set of objects, some of which have state that *changes* over the course of time.
+
+An object *has a state* if its behavior is influenced by its history.
+*** Implementation of State
+Every form of mutable state is constructed from variables.
+
+A variable definition is written like a value definition, but with the keyword =var= in place of =val=:
+#+begin_src scala
+var x: String = "abc"
+var count = 111
+
+x = "hi"
+count = count + 1
+#+end_src
+*** State in Objects
+In practice, objects with state are usually represented by objects that have some variable members.
+#+begin_src scala
+// Example: Here is a class modeling a bank account.
+class BankAccoount {
+  private var balance = 0
+  def deposit(amount: Int): Unit = {
+    if (amount > 0) balance = balance + amount
+  }
+  def withdraw(amount: Int): Int =
+    if (0 < amount && amount <= balance) {
+      balance = balance - amount
+      balance
+    } else throw new Error("insufficient funds")
+}
+#+end_src
+The class =BankAccount= defines a variable =balance= that contains the current balance of the account.
+
+Note that =balance= is private in the =BankAccount= class, it therefore cannot be accessed from outside the class.
+
+To create bank accounts, we use the usual notation for object creation:
+#+begin_src scala
+val account = new BankAccount
+#+end_src
+*** Statefulness and Variables
+** Identity and Change
+#+begin_src scala
+val x = E; val y = E
+val x = E; val y = x   // y == x == E
+#+end_src
+*referential transparency*
+*** Operational Equivalence
+The precise meaning of "being the same" is defined by the property of *operational equivalence*.
+
+In a somewhat informal way, this property is stated as follows.
+
+Suppose we have two definitions =x= and =y=.
+
+=x= and =y= are operationally equivalent if *no possible test* can distinguish between them.
+*** Testing Operational Equivalence
+f(x, y) == f(x, x)
+** Loops
+*** Definition of =while=
+The function =WHILE= can be defined as follows:
+#+begin_src scala
+def WHILE(condition: => Boolean)(command: => Unit): Unit =
+  if (condition) {
+    command
+    WHILE(condition)(command)
+  }
+  else ()
+#+end_src
+*Note:* The condition and the command must be passed by name so that they're reevaluated in each iteration.
+
+*Note:* =WHILE= is tail recursive, so it can operate with a constant stack size.
+*** Translation of For-Loops
+For-loops translate similarly to for-expressions, but using the =foreach= combinator instead of =map= and =flatMap=.
+
+=foreach= is defined on collections with element of type =T= as follows:
+#+begin_src scala
+def foreach(f: T => Unit): Unit = ...
+#+end_src
+** Extended Example: Discrete Event Simulation
+Here's an example that shows how assignments and higher-order functions can be combined in interesting ways.
+
+We will construct a digital circuit simulator.
+
+The simulator is based on a general framework for discrete event simulation.
+** Imperative Event Handling: The Observer Pattern
+The Observer Pattern is widely use when views need to react to changes in a model.
+
+Variants of it are also called
+- publish/subscribe
+- model/view/controller (MVC)
+
++------+  publish  +-------+
+|      |<----------+       |
+| view |  subsribe | model |
+|      +---------->+       |
++------+           +-------+
+#+begin_src scala
+trait Publisher {
+  private var subscribers: Set[Subscriber] = Set()
+
+  def subscribe(subscriber: Subscriber): Unit =
+    subscribers += subscriber
+  
+  def unsubscribe(subscriber: Subscriber): Unit =
+    subscribers -= subscriber
+
+  def publish(): Unit =
+    subscribers.foreach(_.handler(this))
+}
+
+trait Subscriber {
+  def handler(pub: Publisher)
+}
+#+end_src
+*** Observer Pattern, The Bad
+- Forces imperative style, since handlers are Unit-typed
+- Many moving parts that need to be co-ordinated
+- Concurrency makes things more complicated
+- Views are still tightly bound to one state; view update happens immediately
+To quantify (Adobe presentation from 2008)
+- 1/3 of the code in Adobe's desktop applications is devoted to event handling
+- 1/2 of the bugs are found in this code
+
+** Functional Reactive Programming
+*** What is FRP?
+Reactive programming is about reacting to sequences of /events/ that happen in /time/.
+
+Functional view: Aggregate an event sequence into a /signal/.
+- A signal is a value that changes over time
+- It's represented as a function from time to the value domain
+- Instead of propagating updates to mutable state, we define new signals in terms of existing ones
+*** Example: Mouse Positions
+- Event-based view:
+Whenever the mouse moves, an event
+#+begin_src scala
+MouseMoved(toPos: Position)
+#+end_src
+is fired.
+- FRP view:
+A singal,
+#+begin_src scala
+mousePosition: Signal[Position]
+#+end_src
+which at any point in time represents the current mouse position.
+*** Origins of FRP
+FRP started in 1997 with the papter /Functional Reactive Animation/ by Conal Elliott and Paul Hudak and the =Fran= library.
+
+There have been many FRP systems since, both standalone languages and embedded libraries.
+
+Some examples are: Flapjax, Elm, Bacon.js, React4J.
+
+Event streaming dataflow programming systems such as Rx, are related but the term FRP is not commonly used for them.
+
+We will introduce FRP by means of a minimal class, =frp.Signal= whose implementation is explained at the end of this module.
+
+=frp.Signal= is modelled after =Scala.react=, which is described in the papter /Deprecating the Observer Pattern/.
+*** Fundamental Signal Operations
+There are two fundamental operations over signals:
+1. Obtain the value of signal at the current time. In our library this is expressed by () application.
+#+begin_src scala
+mousePosition()    // the current mouse position
+#+end_src
+2. Define a signal in terms of other signals. In our library, this is expressed by the Signal constructor.
+#+begin_src scala
+def inReactangle(LL: Position, UR: Position): Signal[Boolean] =
+  Signal {
+    val pos = mousePosition()
+    LL <= pos && pos <= UR
+}
+#+end_src
+*** Constant Signals
+The Signal(...) syntax can also be used to define a signal that has always the same value:
+#+begin_src scala
+val sig = Signal(3)    // the signal that is always 3.
+#+end_src
+*** Time-Varying Signals
+How do we define a signal that varies in time?
+- We can use externally defined signals, such as =mousePosition= and =map= over them.
+- Or we can use a Var.
+*** Variable Signals
+Value of type =Signal= are immutable.
+
+But our library also defines a subclass =Var= of =Signal= for signals that can be changed.
+
+=Var= provides an "update" operation, which allows to redefine the value of a signal from the current time on.
+#+begin_src scala
+val sig = Var(3)
+sig.update(5)    // the same as sig() = 5, since in scala f(E_1,...,E_n) = E == f.update(E_1,...,E_n,E)
+#+end_src
+*** Signals and Variables
+Signals of type =Var= look a bit like mutable variables, where =sig()= is dereferencing, and =sig() = newValue= is update.
+
+But there's a crucial difference:
+#+begin_src scala
+/* mutable var      signal var */
+a = 2               a() = 2
+l = 2*a             l() = 2*a()
+a = a + 1           a()
+l = 2 * a
+#+end_src
+** A Simple FRP Implementation
+*** Summary: The Signal API
+#+begin_src scala
+class Signal[T](expr: => T) {
+  def apply(): T = ???
+}
+
+object Signal {
+  def applay[T](expr: => T) = new Signal(expr)
+}
+#+end_src
+*** Summary: The Var API
+#+begin_src scala
+class Var[T](expr: =>  T) extends Signal[T](expr) {
+  override def update(expr: => T): Unit = super.update(expr)
+}
+
+object Var {
+  def apply[T](expr: => T) = new Var(expr)
+}
+#+end_src
+*** Implementation Idea
+Each signal maintains
+- its current value
+- the current expression that defines the signal value
+- a set of /observers/: the other signals that depend on its value
+Then, if the signal changes, all observers need to be re-evaluated.
+*** Dependency Maintenance
+- When evaluating a signal-valued expression, need to know which signal caller gets defined or updated by the expression
+- if we know that, then executing a =sig()= means adding =caller= to the =observers= of =sig=.
+- When signal =sig='s value changes, all previously observing signals are re-evaluated and the set =sig.observer= is cleared.
+- Re-evaluation will re-enter a calling signal =caller= in =sig.observers=, as long as =caller='s value still depends on =sig=
+*** Who's Calling?
+One simple(simplistic?) way to do this is to maintain a global data structure referring to the current caller. (we will discuss and refine this later).
+
+That data structure is accessed in a stack-like fashion because one evaluation of a signal might trigger others.
+*** Stackable Variables
+#+begin_src scala
+class StackableVariable[T](init: T) {
+  private var values: List[T] = List(init)
+  def value: T = values.head
+  def withValue[R](newValue: T)(op: => R): R = {
+    values = newValue :: values
+    try op finally values = values.tail
+  }
+}
+#+end_src
+You access it like this
+#+begin_src scala
+val caller = new StackableVar(initalSig)
+caller.withValue(otherSig) {...}
+... caller.value ...
+#+end_src
+*** Set Up in Object Signal
+We also evaluate signal expressions at the top-level when there is no other signal that's defined or updated.
+
+We use the "sentinel" object =NoSignal= as the =caller= for these expressions.
+
+Together:
+#+begin_src scala
+object NoSignal extends Signal[Noting](???) {
+  override def computeValue() = ()
+}
+
+object Signal {
+  private val caller = new StackableVariable[Signal[_]](NoSiganl)
+  def apply[T](expr: => T) = new Signal(expr)
+}
+#+end_src
+*** The Signal Class
+#+begin_src scala
+class Signal[T](expr: => T) {
+  import SIgnal._
+  private var myExpr: () => T = _
+  private var myValue: T = _
+  private var observers: Set[Signal[_]] = Set()
+  update(expr)
+
+  protected def update(expr: => T): Unit = {
+    myExpr = () => expr
+    computeValue
+  }
+
+  protected def computeValue(): Unit = {
+    myValue = caller.withValue(this)(myExpr())
+    if (myValue != newValue) {
+      myValue = newValue
+      val obs = observers
+      observers = Set()
+      obs.foreach(_.computeValue())
+    }
+  }
+
+  def apply() = {
+    observers += caller.value
+    assert(!caller.value.observers.contain(this), "cyclic signal definition")
+    myValue
+  }
+}
+#+end_src
+*** Discussion
+Use global state
+
+One problem: use multiple signal expressions in parallel
+*** Thread-Local State
+- Thread-local state means that each thread accesses a separate copy of a variable
+- It is supported in Scala through calss =scala.util.DynamicVariable=.
+#+begin_src scala
+object Signal {
+  private var caller = new DynamicVariable[Signal[_]](NoSignal)
+  ...
+}
+#+end_src
+*** Another Solution: Implicit Parameters
+Thread-local state still comes with a number of disadvantages:
+- Its imperative nature often produces hidden dependencies which are hard to manage
+- Its implementation on the JDK involves a global hash table lookup, which can be a performance problem
+- It does not play well in situations where threads are multiplexed between several tasks.
+A cleaner solution involves implicit parameters
+- Instead of maintaining a thread-local variable, pass its current value into a signal expression as an implicit parameter.
+- This is purely functional. But it currently requires more boilerplate than the thread-local soluiton
+- Future versions of Scala might solve that problem
+*** Summary
+We only covered Discrete signals changed by events.
+
+Some variants of FRP also treat continous signals.
+
+Value in these systems are often computed by sampling instead of event propagation.
