@@ -1006,11 +1006,168 @@ def filter(pred: T => Boolean): Future[T] = {
 }
 #+end_src
 *** Promises, promises, promises
+#+begin_src scala
 trait Promise[T] {
   def future: Future[T]
   def complete(result: Try[T]): Unit
   def tryComplete(result: Try[T]): Boolean
 }
+#+end_src
 * Week 4
 ** From Try to Future
 ** From Iterables to Observables
+- Synchronous Data Streams: Iterable[T]
+#+begin_src scala
+while(hasNext) next()
+#+end_src
+- The return of the magic dualization trick
+#+begin_src scala
+type Iterator[T] =
+  () => Option[T]
+
+type Iterable[T] =
+  () => (() => Try[Option[T]])
+
+trait Observer[T] {
+  def onNext(T value): Unit
+  def onError(Throwable error): Unit
+  def onCompleted(): Unit
+}
+
+trait Observable[T] {
+  def Subscribe(observer: Observer[T]): Subscription
+}
+
+trait Subscription {
+  def unsubscribe(): Unit
+  def isUnsubscribed: Boolean
+}
+#+end_src
+- Hello World Observale
+#+begin_src scala
+val tricks: Observable[Long] = Observale.interval(1 seconds)
+val events: Observable[Long] = tricks.filter(_%2==0)
+val bufs: Observable[Seq[Long]] = evens.slidingBuffer(count = 2, skip = 1)
+val s = bufs.subscribe(println(_))
+s.unsubscribe()
+#+end_src
+- Rx Operators
+- Subscriptions
+Cold Observable \approx each subscriber has its own private source (subscription causes side effect)
+Hot Observable \approx same source shared by all subscribers
+  - CompositeSubscription
+  - MultiAssignmentSubscription
+  - SerialSubscription
+** Promises and Subjects
+- Subject[T]
+#+begin_src scala
+onNext(value: T)
+onCompleted()
+onError(e: Throwable)
+
+subscribe(o: Observer[T])
+#+end_src
+- Example: Subjects are like channels
+#+begin_src scala
+val channel = ReplaySubject[Int]()
+
+val a = channel.subscribe(x => println(s"a: $x"))
+val b = channel.subscribe(x => println(s"b: $x"))
+
+channel.onNext(42)
+a.unsubscribe()
+
+channel.onNext(4711)
+channel.onCompleted()
+
+val c = channel.subscribe(x => println(s"c: $x"))
+channel.onNext(13)
+#+end_src scala
+- Subjects: meet the family
+#+begin_src scala
+async subject    // caches final value
+publish subject  // current value
+replay subject   // caches all values
+behavior subject // caches latest value
+#+end_src
+- You don't need Subjects in most cases
+Subjects are like mutable var
+** Rx Potpourri
+- Converting Future[T] to Observable[T]
+#+begin_src scala
+object Observable {
+  def apply[T](f: Future[T]): Observable[T] = {
+    val subject = AsyncSubject[T]()
+    f.onComplete {
+      case Failure(e) => { subject.onError(e) }
+      case Success(t) => {
+        subject.onNext(t)
+        subject.onCompleted()
+      }
+    }
+    subject
+  }
+}
+#+end_src
+- Observable notifications
+#+begin_src scala
+abstract class Try[+T]
+case class Success[T](elem: T) extends Try[T]
+case class Failure(t: Throwable) extends Try[Nothing]
+
+abstract class Notification[+T]
+case class OnNext[T](elem: T) extends Notification[T]
+case class OnError(t: Throwable) extends Notification[Nothing]
+case object OnCompleted extends Notification[Nothing]
+
+def materialize: Observable[Notification[T]] = {...}
+#+end_src
+- Remember blocking
+#+begin_src scala
+val f: Future[T] = Future {...}
+val t: T = Await.result(f, 10 seconds)
+
+val o: Observable[T] = Observable(...)
+val ts: Observable[T] = o.toBlocking
+ts.forEach(t => {...})
+#+end_src
+- Blocking
+#+begin_src scala
+val xs: Observable[Long] = Observable.interval(1 second).take(5)
+val ys: List[Long] = xs.toBlocking.toList
+println(ys)
+
+val zs: Observable[Long] = xs.sum
+val s: Long = zs.toBlocking.single
+#+end_src
+- Converting Observables to scalar types
+#+begin_src scala
+def reduce(f: (T, T) => T): Observable[T]
+#+end_src
+- Creating Observables
+#+begin_src scala
+object Observable {
+  def apply[T](subscribe: Subscriber[T] => Unit): Observable[T]
+}
+
+import scala.util.control.Breaks._
+
+def from[T](ts: Iterable[T]): Observable[T] = Observable(s => {
+  ts.foreach(t => {
+    if(s.isUnsubscribed) { break }
+    s.onNext(t)
+  })
+  s.onCompleted()
+})
+#+end_src
+- Backpressure
+check it in Rx wiki
+** Observable Contract
+- Auto-unsubscribe
+#+begin_src scala
+
+#+end_src
+Rx Contract: (onNext)*(onCompleted+onError)
+- Rx Contract
+/Rx Design Guidelines/
+
