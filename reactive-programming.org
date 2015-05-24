@@ -1172,7 +1172,7 @@ Rx Contract: (onNext)*(onCompleted+onError)
 /Rx Design Guidelines/
 
 * Week 5
-- What is an Actor?
+** What is an Actor?
 The Actor Model represents objects and their interactions, resembling human organizations and built upon the laws of physics.
 
 An Actor
@@ -1306,3 +1306,346 @@ Reliability can only be ensured by business-level acknowledgement.
 - Message Ordering
 If an actor sends multiple messages to the same destination, they will not arrive out of order (this is Akka-specific).
 
+** Designing Actor Systems
+*** Starting Out with the Design
+Imaging giving the task to a group of people, dividing it up.
+
+Consider the group to be of very large size.
+
+Start with how people with different tasks will take with each other.
+
+Consider these "people" to be easily replaceable.
+
+Draw a diagram with how the task will be split up, including communication lines.
+*** Example: the Link Checker
+Write an actor system whitch given a URL will recursively download the content, exteact links and follow them, bounded by a maximum depth; all links encountered shall be returned.
+*** Plan of Action
+- Write web client which turns a URL into a HTTP body asynchronously.
+  We will be using "com.ning" % "async-http-client" % "1.7.19"
+- Write a Getter actor for processing the body.
+- Write a Controller which spawns Getters for all links encountered.
+- Write a Receptionist managing one Contoller per request.
+*** The Web Client (1)
+Let's start simple:
+#+begin_src scala
+val client = new AsyncHttpClient
+def get(url: String): String = {
+  val response = client.prepareGet(url).execute().get
+  if (response.getStatusCode < 400)
+    response.getResponseBodyExcerpt(131072)
+  else throw BadStatus(response.getStatusCode)
+}
+#+end_src
+Blocks the calling actor until the web server has replied:
+  - actor is deaf to other requests, e.g. cancellation does not work
+  - wastes one thread -- a finite resource
+#+begin_src scala
+private val client = new AsyncHttpClient
+def get(url: String) (implicit exec: Executor): Future[String] = {
+  val f = client.prepareGet(url).execute();
+  val p = Promise[String]()
+  f.addListener(new Runnable {
+    def run = {
+      val response = f.get
+      if (response.getStatusCode < 400)
+        p.success(response.getResponseBodyExcerpt(131072))
+      else
+        p.failure(BadStatus(response.getStatusCode))
+    }
+  }, exec)
+  p.future
+}
+#+end_src
+*** Finding Links
+#+begin_src scala
+// using "org.jsoup" % "jsoup" % "1.8.1"
+import org.jsoup.Jsoup
+import scala.collection.JavaConverters._
+
+def findLinks(body: String): Iterator[String] = {
+  val document = Jsoup.parse(body, url)
+  val links = document.select("a[href]")
+  for {
+    link <- links.iterator().asScala
+   } yield link.absUrl("href")
+}
+#+end_src
+- The Getter Actor (1)
+#+begin_src scala
+class Getter(url: String, depth: Int) extends Actor {
+  implicit val exec = context.dispatcher
+
+  val future = WebClient.get(url)
+  future onComplete {
+    case Success(body) => self ! body
+    case Failure(err) => self ! Status.Failure(err)
+  }
+  ...
+}
+#+end_src
+- The Getter Actor (2)
+Akka has a pattern for the above code.
+#+begin_src scala
+class Getter(url: String, depth: Int) extends Actor {
+  implicit val exec = context.dispatcher
+
+  val future = WebClient.get(url)
+  future.pipeTo(self)
+  ...
+}
+#+end_src
+- The Getter Actor (3)
+#+begin_src scala
+class Getter(url: String, depth: Int) extends Actor {
+  implicit val exec = context.dispatcher
+
+  WebClient get url pipeTo self
+  ...
+#+end_src
+- The Getter Actor (4)
+#+begin_src scala
+class Getter(url: String, depth: Int) extends Actor {
+  ...
+  def receive = {
+    case body: String =>
+      for (link <- findLinks(body))
+        context.parent ! Controller.Check(link, depth)
+      stop()
+    case _: Status.Failure => stop()
+  }
+  def stop(): Unit = {
+    context.parent ! Done
+    context.stop(self)
+  }
+}
+#+end_src
+*** Actor-Based Logging
+- Logging includes IO which can block indefinitely
+- Akka's logging passes that task to dedicated actors
+- supports ActorSystem-wide levels of =debug, info, waring, error=
+- set level using setting akka.loglevel=DEBUG (for example)
+#+begin_src scala
+class A extends Actor with ActorLogging {
+  def receive = {
+    case msg => log.debug("received message: {}", msg)
+  }
+}
+#+end_src
+*** The Controller
+#+begin_src scala
+class Controller extends Actor with ActorLogging {
+  var cache = Set.empty[String]
+  var childeren = Set.empty[ActorRef]
+  def receive = {
+    case Check(url, depth) =>
+      log.debug("{} checking {}", depth, url)
+      if (!cache(url) && depth > 0)
+        children += context.actorOf(Props(new Getter(url, depth + 1)))
+      cache += url
+    case Getter.Done =>
+      children -= sender
+      if (children.isEmpty) context.parent ! Result(cache)
+  }
+}
+#+end_src
+*** Handling Timeouts
+#+begin_src scala
+import scala.concurrent.duration._
+
+class Controller extends Actor with ActorLogging {
+  context.setReceiveTimeout(10.seconds)
+  ...
+  def receive = {
+    case Check(...)  => ...
+    case Getter.Done => ...
+    case ReceiveTimeout => children.foreach (_ ! Getter.Abort)
+  }
+}
+#+end_src
+The receive timeout is reset by every received message.
+*** The Scheduler
+Akka includes a timer service optimized for high volume, short durations and frequent cancellation.
+#+begin_src scala
+trait Scheduler {
+  def scheduleOnce(delay: FiniteDuration, target: ActorRef, msg: Any)
+                  (implicit ec: ExecutionContext): Cancellable
+
+  def scheduleOnce(delay: FiniteDuration)(block: => Unit)
+                  (implicit ec: ExecutionContext): Cancellable
+
+  def scheduleOnce(delay: FiniteDuration, run: Runnable)
+                  (implicit ec: ExecutionContext): Cancellable
+  ... // the same for repeating timers
+}
+#+end_src
+*** Adding an Overall Timeout (1)
+#+begin_src scala
+class Controller extends Actor with ActorLogging {
+  import context.dispatcher
+  var childeren = Set.empty[ActorRef]
+  context.system.scheduler.scheduleOnce(10.secnonds) {
+    children foreach (_ ! Getter.Abort)  // #1
+  } ... }
+#+end_src
+Not thread-safe, since #1 runs in scheduler not actor context.
+*** Adding an Overall Timeout (2)
+#+begin_src scala
+class Controller extends Actor with ActorLogging {
+  import context.dispatcher
+  var childeren = Set.empty[ActorRef]
+  context.system.scheduler.scheduleOnce(10.secnonds, self, Timeout)
+  ...
+  def receive = {
+    ...
+    case Timeout => children foreach (_ ! Getter.Abort)
+  }
+}
+#+end_src
+*** How Actors and Future Interact (1)
+#+begin_src scala
+class Cache extends Actor {
+  var cache = Map.empty[String, String]
+  def receive = {
+    case Get(url) =>
+      if (cache contains url) sender ! cache(url)
+      else
+        WebClient get url foreach { body =>
+          cache += url -> body
+          sender ! body
+        }
+  }
+}
+#+end_src
+*** How Actors and Future Interact (2)
+#+begin_src scala
+class Cache extends Actor {
+  var cache = Map.empty[String, String]
+  def receive = {
+    case Get(url) =>
+      if (cache contains url) sender ! cache(url)
+      else
+        WebClient get url map (Result(sender, url, _)) pipeTo self
+    case Result(client, url, body) =>
+      cache += url -> body
+      client ! body
+  }
+}
+#+end_src
+*** How Actors and Future Interact (3)
+#+begin_src scala
+class Cache extends Actor {
+  var cache = Map.empty[String, String]
+  def receive = {
+    case Get(url) =>
+      if (cache contains url) sender ! cache(url)
+      else {
+        var client = sender  // cache the sender
+        WebClient get url map (Result(client, url, _)) pipeTo self
+      }
+    case Result(client, url, body) =>
+      cache += url -> body
+      client ! body
+  }
+}
+#+end_src
+*** The Receptionist (1)
+#+begin_src scala
+class Receptionist extends Actor {
+  def receive = waiting
+
+  val waiting: Receive = {
+    // upon Get(url) start a traversal and become running
+    case Get(url) => context.become(runNext(Vector(Job(sender, url))))
+  }
+  
+  def running(queue: Vector[Job]): Receive = {
+    // upon Get(url) append that to queue and keep running
+    // upon Contoller.Result(links) ship that to client
+    //   and run next job from queue (if any)
+    case Controller.Result(links) =>
+      val job = queue.head
+      job.client ! Result(job.url, links)
+      context.stop(sender)
+      context.become(runNext(queue.tail))
+    case Get(url) =>
+      context.become(enqueueJob(queue, Job(sender, url)))
+  }
+
+  def enqueueJob(queue: Vector[Job], job: Job): Receive = {
+    if (queue.size > 3) {
+      sender ! Failed(job.url)
+      running(queue)
+    } else running(queue :+ job)
+  }
+}
+#+end_src
+*** The Receptionist (2)
+#+begin_src scala
+case class Job(client: ActorRef, url: String)
+var reqNo = 0
+def runNext(queue: Vector[Job]): Receive = {
+  reqNo += 1
+  if (queue.isEmpty) waiting
+  else {
+    val controller = context.actorOf(Props[Controller], s"c$reqNo")
+    controller ! Controller.Check(queue.head.url, 2)
+    running(queue)
+  }
+}
+#+end_src
+=reqNo= permeates all state but does not qualitatively change behavior: an example for when using =var= may benefit.
+*** What we learned so far
+- A reactive application is non-blocking & event-driven top to bottom.
+- Actors are run by a dispatcher -- potentially shared -- which can also run Futures.
+- Prefer immutable data structures, since they can be shared.
+- Do not refere to actor state from code running asynchronously
+** Testing Actor Systems
+*** Testing Actors
+Tests can only verify externally observable effects
+*** Akka's TestKit (1)
+TestProbe as remote-controlled actor.
+#+begin_src scala
+implicit val system = ActorSystem("TestSys")
+val toggle = system.actorOf(Props[Toggle])
+val p = TestProbe()
+p.send(toggle, "How are you?")
+p.expectMsg("happy")
+p.send(toggle, "How are you?")
+p.expectMsg("sad")
+p.send(toggle, "unknow")
+p.expectNoMsg(1.second)
+system.shutdown()
+#+end_src
+*** Akka's TestKit (2)
+Running a test within a TestProbe:
+#+begin_src scala
+new TestKit(ActorSystem("TestSys")) with ImplicitSender {
+  val toggle = system.actorOf(Props[Toggle])
+  toggle ! "How are you?"
+  expectMsg("happy")
+  toggle ! "How are you?"
+  expectMsg("sad")
+  toggle ! "unknown"
+  expectNoMsg(1.second)
+  system.shutdown()
+}
+#+end_src
+*** Testing Actors with Dependencies
+Accessing the real DB or production web services is not desirable:
+  - Akka + Spring
+  - one simple solution is to add overridable factory methods
+#+begin_src scala
+
+#+end_src
+*** Testing Interaction with the Parent
+Create a step-parent:
+#+begin_src scala
+
+#+end_src
+*** Inserting a Foster-Parent
+#+begin_src scala
+
+#+end_src
+*** Testing Actor Hierarchies
+Start verifying leaves, work your way up:
+  - "Reverse Onion Testing"
