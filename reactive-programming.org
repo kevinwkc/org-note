@@ -1928,3 +1928,52 @@ case NewPost(text, id) =>
 ------  
   - Retrying means taking note that the message needs to be sent
   - Acknowledgement means taking note of the receipt of the confirmation
+#+begin_src scala
+class UserProcessor 
+    extends PersistentActor with AtLeastOnceDelivery {
+  def receiveCommand = {
+    case NewPost(text, id) =>
+      persist(PostCreated(text)) { e =>
+        deliver(publisher, PublishPost(text, _))
+        sender() ! BlogPosted(id) }
+    case PostPublished(id) => confirmDelivery(id)
+  }
+  def receiveRecover = {
+    case PostCreated(text) => deliver(publisher, PublishPost(text, _))
+    case PostPublished(id) => confirmDelivery(id)
+  }
+} 
+#+end_src
+*** Exactly-Once Delivery
+- /At-least-Once/ delivery leads to duplicates at the receiver
+- The receiver needs to remember what it has already done to avoid redoing it
+#+begin_src scala
+class Publisher extends PersistentActor {
+  var expectedId = 0L
+  def receiveCommand = {
+    case PublishPost(text, id) =>
+      if (id > expectedId) () // ignore, not yet ready for that
+      else if (id < expectedId) sender() ! PostPublished(id)
+      else persist(PostPublished(id)) { e =>
+          sender() ! e
+          // modify website
+          expectedId += 1
+      }
+  }
+  def receiveRecover = { case PostPublished(id) => expectedId = id + 1 }
+}
+#+end_src
+*** When to Perform External Effects?
+Performing the effect and persisting that it was done cannot be atomic.
+  - Perform it before persisting for at-least-once semantics.
+  - Perform it after persisting for at-most-once semantics.
+This choice needs to be made based on the underlying business model.
+
+If processing is /idempotent/ then using at-least-once semantics achieves /effectively exactly-once processing./
+*** Summary
+- Actors persist facts that represent changes to their state.
+- Events can be replicated and used to inform other components.
+- Recovery replays past events to reconstruct state; snapshots reduce this cost.
+* Week 7
+** Actors are Distributed
+
