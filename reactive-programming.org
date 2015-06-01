@@ -1925,6 +1925,6 @@ case NewPost(text, id) =>
   - Retries are the sender's responsibility
   - The recipient needs to acknowledge receipt
   - Lost receipts lead to duplicate deliveries => at-least-once
-  
+------  
   - Retrying means taking note that the message needs to be sent
   - Acknowledgement means taking note of the receipt of the confirmation
