@@ -1976,4 +1976,469 @@ If processing is /idempotent/ then using at-least-once semantics achieves /effec
 - Recovery replays past events to reconstruct state; snapshots reduce this cost.
 * Week 7
 ** Actors are Distributed
+*** The Impact of Network Communication
+Compared to in-process communication:
+  - data sharing only by value
+  - lower bandwidth
+  - higher latency
+  - partial failure
+  - data corruption
+Multiple processes on the same machine are quantitatively less impacted, but qualitatively the issues are the same.
+*** Actors are Distributed
+Actor communication is asynchronous, one-way and not guaranteed.
 
+Actor encapsulation makes them look the same, regardless where they live.
+
+Actors are "Location Transparent", hidden behind =ActorRef=.
+#+begin_src scala
+val system = ActorSystem("HelloWorld")
+val ref = system.actorOf(Props[Greeter], "greeter")
+println(ref.path)  // prints: akka://HelloWorld/user/greeter
+#+end_src
+Remote address example: =akka.tcp://HelloWorld@10.2.4.6:6565=
+
+Every actor is identified by at least one URI.
+*** The Difference between =ActorRef= and =ActorPath=
+Actor names are unique within a parent, but can be reused.
+  - =ActorPath= is the full name, whether the actor exists or not.
+  - =ActorRef= points to an actor which was started; an /incarnation/.
+=ActorPath= can only optimistically send a message.
+
+=ActorRef= can be watched.
+
+=ActorRef= example: =akka://HelloWorld/user/greeter#43428347=.
+*** Resolving an ActorPath
+#+begin_src scala
+import akka.actor.{ Identify, ActorIdentity }
+case class Resolve(path: ActorPath)
+case class Resolved(path: ActorPath, ref: ActorRef)
+case class NotResolved(path: ActorPath)
+
+class Resolver extends Actor {
+  def receive = {
+    case Resolve(path) =>
+      context.actorSelection(path) ! Identify((path, sender))
+    case ActorIdentity((path, client), Some(ref)) =>
+      client ! Resolved(path, ref)
+    case ActorIdentity((path, client), None) =>
+      client ! NotResolved(path)
+  }
+}
+#+end_src
+*** Relative Actor Paths
+Looking up a grand-child:
+=context.actorSelection("child/grandchild")=
+Looking up from the local root:
+=context.actorSelection("/user/app")=
+Broadcasting using wildcards:
+=context.actorSelection("/user/controllers/*")=
+*** What is a Cluster?
+A set of nodes (actor systems) about which all member are in agreement. Those nodes can then collaborate on a common task.
+*** The Formation of a Cluster
+A single node can declare itself a cluster ("join itself").
+
+A single node can join a cluster:
+  - a request is sent to any member
+  - once all current members know about the new node it is declared part of the cluster.
+Information is spread using a gossip protocol.
+*** Starting Up a Cluster
+Prerequisites:
+  - "com.typesafe.akka" %% "akka-cluster" % "2.2.1"
+  - configuration enabling cluster module:
+#+begin_src scala
+akka {
+  actor {
+    provider = akka.cluster.ClusterActorRefProvider
+  }
+}
+#+end_src
+in application.conf or as -Dakka.actor.provider=...
+#+begin_src scala
+class ClusterMain extends Actor {
+  val cluster = Cluster(context.system)
+  cluster.subscribe(self, classOf[ClusterEvent.MemberUp])
+  cluster.join(cluster.selfAddress)
+
+  def receive = {
+    case ClusterEvent.MemberUp(member) =>
+      if (member.address != cluster.selfAddress) {
+        // someone joined
+      }
+  }
+}
+#+end_src
+This will start a single-node cluster on port 2552.
+
+This needs configuration =akka.remote.netty.tcp.port = 0=.
+#+begin_src scala
+class ClusterWorker extends Actor {
+  val cluster = Cluster(context.system)
+  cluster.subscribe(self, classOf[ClusterEvent.MemberRemoved])
+  val main = cluster.selfAddress.copy(port = Some(2552))
+  cluster.join(main)
+
+  def receive = {
+    case ClusterEvent.MemberRemoved(m, _) =>
+      if (m.address == main) context.stop(self)
+  }
+}
+#+end_src
+*** Cluster-Aware Routing
+#+begin_src scala
+class ClusterReceptionist extends Actor {
+  val cluster = Cluster(context.system)
+  cluster.subscribe(self, classOf[MemberUp])
+  cluster.subscribe(self, classOf[MemberRemoved])
+
+  override def postStop(): Unit = {
+    cluster.unsubscribe(self)
+  }
+  
+  def receive = awaitingMembers
+
+  val awaitingMembers: Receive = {
+    case current: ClusterEvent.CurrentClusterState =>
+      val address = current.members.toVector map (_.address)
+      val notMe = addresses filter (_ != cluster.selfAddress)
+      if (notMe.nonEmpty) context.become(active(notMe))
+    case MemberUp(member) if member.address != cluster.selfAddress =>
+      context.become(active(Vector(member.address)))
+    case Get(url) => sender ! Failed(url, "no node available")
+  }
+  
+  def active(addresses: Vector[Address]): Receive = {
+    case MemberUp(member) if member.address != cluster.selfAddress =>
+      context.become(active(addresses :+ member.address))
+    case MemberRemoved(member, _) =>
+      val next = addresses filterNot (_ == member.address)
+      if (next.isEmpty) context.become(awaitingMembers)
+      else context.become(active(next))
+    case Get(url) if context.children.size < addresses.size =>
+      val client = sender
+      val address = pick(addresses)
+      context.actorOf(Props(new Customer(client, url, address)))
+    case Get(url) =>
+      sender ! Failed(url, "too many parallel queries")
+  }
+}
+#+end_src
+*** Remote Deployment
+#+begin_src scala
+class Customer(client: ActorRef, url: String, node: Address) extends Actor {
+  implicit val s = context.parent
+
+  override val supervisorStrategy = SupervisorStrategy.stoppingStrategy
+  val props = Props[Controller].withDeploy(Deploy(scope = RemoteScope(node))
+  val controller = context.actorOf(props, "controller")
+  context.watch(controller)
+
+  context.setReceiveTimeout(5.seconds)
+  controller ! Controller.Check(url, 2)
+
+  def receive = ({
+    case ReceiveTimeout =>
+      context.unwatch(controller)
+      client ! Receptionist.Failed(url, "controller timed out")
+    case Terminated(_) =>
+      client ! Receptionist.Failed(url, "controller died")
+    case Controller.Result(links) =>
+      context.unwatch(controller)
+      client ! Receptionist.Result(url, links)
+    }: Receive) andThen (_ => context.stop(self))
+}
+#+end_src
+** Actors are Distributed Part II
+*** Cluster needs Failure Detection
+Consensus is unattainable if some members are unreachable.
+
+Every node is monitored using heartbeats from several others.
+
+A node unreachable from one other is considered unreachable for all.
+
+Nodes can be removed to restore the cluster consensus.
+*** Cluster and DeathWatch
+Actors on nodes which are removed from the cluster must be dead.
+  - allows clean-up of remote-deployed child actors
+  - decision must be taken consistently within the cluster
+  - once Terminated was delivered the actor cannot come back
+Lifecycle monitoring is important for distributed fail-over:
+  - delivery of Terminated is guaranteed
+  - this is only possible because it can be synthesized when needed
+*** Applying it to ClusterWorker
+#+begin_src scala
+val cluster = Cluster(context.system)
+cluster.subscribe(self, classOf[ClusterEvent.MemberUp])
+val main = cluster.selfAddress.copy(port = Some(2552))
+cluster.join(main)
+
+def receive = {
+  case ClusterEvent.MemberUp(member) =>
+    if (member.address == main) {
+      val path = RootActorPath(main) / "user" / "app" / "receptionist"
+      context.actorSelection(path) ! Identify("42")
+    case ActorIdentity("42", None) => context.stop(self)
+    case ActorIdentity("42", Some(ref)) => context.watch(self)
+    case Terminated(_) => context.stop(self)
+}
+#+end_src
+** Eventual Consistency
+*Weak Consistency*: after an update conditions need to be met until reads return the update value; this is the /inconsistency window/
+#+begin_src scala
+private @volatile var field = 0
+def update(f: Int => Int): Future[Int] = Future {
+  synchronized {
+    field = f(field)
+    field
+  }
+}
+def read(): Int = field
+#+end_src
+*Eventual Consistency*: once no more updates are made to an object there is a time after which all reads return the last written value
+*** Actors and Eventual Consistency
+- an actor forms an island of consistency
+- collaborating actors can at most be eventually consistent
+- actors are not automatically eventually consistent
+- event consistency requires eventual dissemination of all updates
+- need to employ suitable data structures, for example CRDTs (Commutative Replicated Data Types)
+*** Eventually Consistent Store
+#+begin_src scala
+def receive = {
+  case Update(x) =>
+    field = x
+    lastUpdate = System.currentTimeMillis()
+    peers foreach(_ ! Sync(field, lastUpdate))
+  case Get => sender ! Result(field)
+  case Sync(x, timestamp) if timestamp > lastUpdate =>
+    field = x
+    lastUpdate = timestamp
+  case Hello =>
+    peers ::= sender
+    sender ! Sync(field, lastUpdate)
+}
+#+end_src
+*** An Example Data Sructure
+The cluster membership state is a convergent data type:
+  - directed acyclic graph of states
+  - conflicts can always be resolved locally
+  - conflict resolution is commutative
+** Actor Composition
+*** The Type of an Actor
+The interface of an Actor is defined by its accepted message types, the type of an Actor is structural.
+
+The structure may change over time defined by a protocol.
+
+Superficially current Actor implementations are unityped:
+  - sending a message is =(Any => Unit)=
+  - behavior is =PartialFunction[Any, Unit]=
+This limitation is not a fundamental.
+*** Actor Composition
+Actor Systems are composed like human organizations.
+
+Actors are composed on a protocol level.
+
+An Actor can
+  - translate and forward requests
+  - translate and forward replies
+  - split up requests and aggregate replies
+*** The Customer Pattern
+- fundamental request-reply pattern
+- customer address included in the (original) request
+- allow dynamic composition of actor systems
+*** Interceptors
+#+begin_src scala
+class AuditTrail(target: ActorRef) extends Actor with ActorLogging {
+  def receive = {
+    case msg =>
+      log.info("sent {} to {}", msg, target)
+      target forward msg
+  }
+}
+#+end_src
+A one-way proxy does not need to keep state.
+*** The Ask Pattern
+#+begin_src scala
+import akka.pattern.ask
+
+class PostsByEmail(userService: ActorRef) extends Actor {
+  implicit val timeout = Timeout(3.seconds)
+  def receive = {
+    case Get(email) =>
+      (userService ? FindByEmail(email)).mapTo[UserInfo]
+        .map(info => Result(info.post.filter(_.email == email)))
+        .recover { case ex => Failure(ex) }
+        .pipeTo(sender)
+  }
+}
+#+end_src
+*** Result Aggregation
+#+begin_src scala
+class PostSummary(...) extends Actor {
+  implicit val timout = Timeout(500.millis)
+  def receive = {
+    case Get(postId, user, password) =>
+      val response = for {
+        status <- (publisher ? GetStatus(postId)).mapTo[PostStatus]
+        text   <- (postStore ? Get(postId)).mapTp[Post]
+        auth   <- (authService ? Login(user, password)).mapTp[AuthStatus] 
+      } yield
+        if (auth.successful) Result(status, text)
+        else Failure("not authroized")
+     response pipeTo sender
+  }
+}
+#+end_src
+*** Risk Delegation
+- create subordinate to perform dangerous task
+- apply lifecycle monitoring
+- report success/failure back to requestor
+- ephemeral actor shuts down after each task
+*** Example: File Writer
+#+begin_src scala
+class FileWriter extends Actor {
+  var workerToCustomer = Map.empty[ActorRef, ActorRef]
+  override val supervisorStrategy = SupervisorStrategy.stoppingStrategy
+  def receive = {
+    case Write(contents, file) =>
+      val worker = context.actorOf(Props(new FileWorker(contents, file, self)))
+      context.watch(worker)
+      workerToCustomer += worker -> sender
+    case Done => workerToCustomer.get(sender).foreach(_ ! Done)
+                 workerToCustomer -= sender
+    case Terminated(worker) => workerToCustomer.get(worker).foreach(_ ! Failed)
+                               workerToCustomer -= worker
+  }
+}
+#+end_src 
+** Scalability
+*** Replication of Actors
+One actor can process one message at a time.
+
+Stateless replicas can run concurrently.
+
+Routing messages to worker pools:
+- stateful (round robin, smallest queue, adaptive, ...)
+- stateless (random, consistent hashing, ...)
+*** Round-Robin Routing
+- equal distribution of messages to routes
+- hiccups or unequal message processing times introduce imbalance
+- imbalances lead to larger spread in latency spectrum
+*** Smallest Mailbox Routing
+- requires routees to be local to inspect message queue
+- evens out imbalances, less persistent latency spread
+- high routing cost, only worth it for high processing cost
+*** Shared Work Queue
+- requires routees to be local
+- most homogenous latency
+- effectively a pull model
+*** Adaptive Routing
+- requires feedback about processing times, latencies, queue sizes
+- feedback can be sampled coarsely
+- steering the routing weights subject to feedback control theory
+  - oscillations
+  - over-dampending
+*** Random Routing
+- asymptotically equal distribution of messages to routes
+- no shared state necessary: low routing overhead
+- works with several distributed routers to the same routees
+- can stochastically lead to imbalances
+*** Consistent Hashing
+- splitting incoming message stream accordint to some criterion
+- bundle substreams and send them to the same routees consistenly
+- can exhibit systematic imbalances based on hashing function
+- different latencies for parts of the input spectrum
+- no shared state necessart between different routers to the same targets
+*** Replication of Stateful Actors
+Consistent Hashing can be used if substreams correspond to indepedent parts of the state.
+
+Multiple writers to the same state require appropriate data structures and are eventually consistent.
+*** Replication of Stateful Actors (what gui?)
+- based on persisted state
+- only one instance active at all times
+- consistent routing to the active instance
+- possibly buffering messages during recovery
+- migration means recovery at a different location
+*** Summary
+Asynchronous message passing enables vertical scalability.
+
+Location transparency enables horizontal scalability.
+** Responsiveness
+Responsiveness is the ability to respond to input in time.
+
+A system which does not respond in time is not available.
+
+The goal of resilience is to be available.
+
+Responsiveness implies resilience to overload scenarios.
+*** Exploit Parallelism
+Performing queries in parallel reduces latency:
+#+begin_src scala
+class PostSummary(...) extends Actor {
+  implicit val timeout = Timout(500.millis)
+  def receive = {
+    case Get(postId, user, password) =>
+      val status = (publisher ? GetStatus(postId)).mapTo[PostStatus]
+      val text = (postStore ? Get(postId)).mapTp[Post]
+      val auth = (authService ? Login(user, password).mapTo[AuthStatus]
+      val response = for (s <- status; t <- text; a <- auth) yield {
+        if (a.successful) Result(s, t) else Failure("not authorized")
+      }
+      response pipeTo sender
+  }
+}
+#+end_src
+** Load vs. Responsiveness
+When incoming request rate rises, latency typically rises.
+  - Avoid dependency of processing cost on load.
+  - Add parallelism elastically (resizing routers).
+When the rate exceeds the system's capacity requests will pile up:
+  - Processing gets backlogged.
+  - Clients timeout, leading to unnecessary work being performed.
+*** Circuit Breaker
+#+begin_src scala
+class Retriever(userService: ActorRef) extends Actor {
+  implicit val timeout = Timeout(2.seconds)
+  val cb = CircuitBreaker(context.system.scheduler,
+    maxFailures = 3,
+    callTimeout = 1.second,
+    resetTimeout = 30.seconds)
+
+  def receive = {
+    case Get(user) =>
+      val result = cb.withCircuitBreaker(userService ? user).mapTo[String]
+      ...
+  }
+}
+#+end_src
+*** Builkheading
+Separate computing intensive parts from client-facing parts.
+
+Actor isolation is not enough: execution mechanism is still shared.
+
+Dedicate disjoint resources to different parts of the system.
+
+=Props[MyActor].withDispatcher("compute-jobs")=
+
+#+begin_src scala
+akka.actor.default-dispatcher {
+  executor = "fork-join-executor"
+  fork-join-executor {
+    parallelism-min = 8
+    parallelism-max = 64
+    parallelism-factor = 3.0
+  }
+}
+
+compute-jobs.fork-join-executor {
+  parallelism-min = 4
+  parallelism-max = 4
+}
+#+end_src
+*** Failures vs. Responsiveness
+Detecting failure takes time, usually a timeout.
+
+Immediate fail-over requires the backup to be readily available.
+
+Instant fail-over is possible in active-active configurations.
+*** Summary
+- Message-driven systems can be scaled horizontally and vertically
+- Responsiveness demands resilience and elasticity
