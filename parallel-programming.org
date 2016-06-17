@@ -1,0 +1,212 @@
+* week 1
+** Introduction to Parallel Computing
+*** What is Parallel Computing?
+/Parallel computing/ is a type of computation in which many calculations are performed at the same time.
+
+Basic principle: computation can be divided into smaller subproblems, each of which can be solved simultaneously.
+*** Parallel Programming vs. Concurrent Programming
+Parallel program -- uses parallel hardware to execute computation more quickly. Efficiency is its main concern.
+
+Concurren program -- /may/ or /may not/ execute multiple executions at the same time. Improves modularity, responsiveness or maintainability.
+*** Parallelism Granularity
+- bit-level parallelism::processing multiple bits of data in parallel
+- instruction-level parallelism::executing different instructions from the same instruction stream in parallel
+- *task-level parallelism*::executing separate instruction streams in parallel
+*** Classes of Parallel Computers
+- multi-core processors
+- symmetric multiprocessors
+- graphics processing unit
+- field-programmable gate arrays
+- computer clusters
+Our focus will be programming for mult-cores and SMPs.
+*** Summary
+Course structure:
+- week 1::basics of parallel computing and parallel program analysis
+- week 2::task-parallelism, basic parallel algorithms
+- week 3::data-parallelism, Scala parallel collections
+- week 4::data structures for parallel computing
+** Parallelism on the JVM
+*** JVM and parallelism
+There are many forms of parallelism.
+
+Our parallel programming model assumption -- multicore or multiprocessor systems with shared memory.
+
+Operating System and the JVM as the underlying runtime environments.
+*** Creating and starting threads
+Each JVM process starts with a *main thread*.
+
+To start additional threads:
+1. Define a Thread subclass.
+2. Instantiate a new Thread object.
+3. Call start on the Thread object.
+The Thread subclass defines the code that the thread will execute. The same custom Thread subclass can be used to start multiple threads.
+*** Example: starting threads
+#+BEGIN_SRC scala
+class HelloThread extends Thread {
+  override def run() {
+    println("Hello world!")
+  }
+}
+
+val t = new HelloThread
+
+t.start()
+t.join()
+#+END_SRC
+*** Atomicity & The Synchronized block
+The synchronized block is used to achieve atomicity. Code block after a synchronized call on an object =x= is never executed by two threads at the same time.
+#+BEGIN_SRC scala
+private val x = new AnyRef {}
+private var uidCount = 0L
+def getUniqueId(): Long = x.synchronized {
+  uidCount = uidCount + 1
+  uidCount
+}
+#+END_SRC
+*** Composition with the synchronized block
+Invocations of the synchronized block can nest.
+#+begin_src scala
+// you must obtain both monitor of the src and tar accounts when
+// transfer
+class Account(private var amount: Int = 0) {
+  def transfer(target: Account, n: Int) =
+    this.synchronized {
+      target.synchronized {
+        this.amount -= n
+        target.amount += n
+      }
+    }
+}
+#+end_src
+*** Resolving deadlocks
+One approach is to always acquire resources in the same order.
+
+This assumes an ordering relationship on the resources.
+#+begin_src scala
+val uid = getUniqueUid()
+private def lockAndTransfer(target: Account, n: Int) =
+  this.synchronized {
+    target.synchronized {
+      this.amount -= n
+      target.amount += n
+    }
+  }
+def transfer(target: Account, n: Int) =
+  if (this.uid < target.uid) this.lockAndTransfer(target, n)
+  else target.lockAndTransfer(this, -n)
+#+end_src
+*** Memory model
+Memory model is a set of rules that describes how threads interact when accessing shared memory.
+
+Java Memory Model - the memory model for the JVM
+1. Two threads writing to separate locations in memory do not need synchronization.
+2. A thread =X= that calls =join= on another thread =Y= is guranteed to observe all the writes by thread =Y= after =join= returns.
+*** Summary
+The parallelism constructs in the remainder of the course are implemented in terms of:
+- threads
+- synchronization primitives such as =synchronized=
+** Running Computers in Parallel
+#+begin_src scala
+def pNormRec(a: Array[Int], p: Double): Int =
+  power(segmentRec(a, p, 0, a.length), 1/p)
+
+def segmentRec(a: Array[Int], p: Double, s: Int, t: Int) = {
+  if (t - s < threshold)
+    sumSegment(a, p, s, t) // small segment: do it sequentially
+  else {
+    val m = s + (t - s) / 2
+    val (sum1, sum2) = parallel(segmentRec(a, p, s, m),
+                                segmentRec(a, p, m, t))
+    sum1 + sum2 } }
+#+end_src
+*** Signature of parallel
+#+begin_src scala
+def parallel[A, B](taskA: => A, taskB: => B): (A, B) = { ... }
+#+end_src
+- returns the same values as given
+- benefit: parallel(a,b) can be faster than (a,b)
+- it takes its arguments as /by name/, indicated with= => A= and= => B=
+*** What happens inside a system when we use parallel?
+Efficient parallelism requires support from
+- language and libraries
+- virtual machine
+- operating system
+- hardware
+One implementation of parallel uses Java Virtual Machine threads
+- those typically map to operating system threads
+- operating system can schedule different threads on multiple cores
+** Monte Carlo Method to Estimate Pi
+*** A method to estimate \pi
+Ratio between the surfaces of 1/4 of a circle and 1/4 of a square:
+#+begin_latex
+\lambda = \cfrac{(1^2)\pi/4}{2^2/4} = \cfrac{\pi}{4}
+#+end_latex
+Estimating \lambda: randomly sample points inside the square
+
+Count how many fall inside the circle
+
+Multiply this ratio by 4 for an estimate of \pi
+*** Four-Way Parallel Code for Sampling Pi
+#+begin_src scala
+import scala.util.Random
+def mcCount(iter: Int): Int = {
+  val randomX = new Random
+  val randomY = new Random
+  var hits = 0
+  for (i <- 0 until iter) {
+    val x = randomX.nextDouble
+    val y = randomY.nextDouble
+    if (x*x + y*y < 1) hits = hits + 1
+  }
+  hits
+}
+
+def monteCarloPiPar(iter: Int): Double = {
+  val ((pi1, pi2), (pi3, pi4)) = parallel(
+    parallel(mcCount(iter/4), mcCount(iter/4)),
+    parallel(mcCount(iter/4), mcCount(iter - 3*(iter/4))))
+    4.0 * (pi1 + pi2 + pi3 + pi4) / iter
+}
+#+end_src
+** First-class Tasks
+*** More flexible construct for parallel computation
+#+begin_src scala
+val (v1, v2) = parallel(e1, e2)
+#+end_src
+we can write alternatively using the task construct:
+#+begin_src scala
+val t1 = task(e1)
+val t2 = task(e2)
+val v1 = t1.join
+val v2 = t2.join
+#+end_src
+*** Task interface
+Here is a minimal interface for tasks:
+#+begin_src scala
+def task(c: => A) : Task[A]
+
+trait Task[A] {
+  def join: A
+}
+#+end_src
+=task= and =join= establish maps between computations and tasks
+
+In terms of the value computed the equation =task(e).join==e= holds
+
+We can omit writing =.join= if we also define an implicit conversion:
+#+begin_src scala
+implicit def getJoin[T](x:Task[T]): T = x.join
+#+end_src
+** How Fast are Parallel Programs?
+\begin{equation}
+Depth(e)+\frac{Work(e)}{P}
+\end{equation}
+*** Parallelism and Amdahl's Law
+1/(f+\frac{1-f}{P})
+** Benchmarking Parallel Programs
+* week 2
+** Parallel Sort
+*** Merge Sort
+#+begin_src scala
+def parMergeSort(xs: Array[Int], maxDepth: Int): Unit = {
+#+end_src scala
