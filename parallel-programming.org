@@ -209,4 +209,477 @@ Depth(e)+\frac{Work(e)}{P}
 *** Merge Sort
 #+begin_src scala
 def parMergeSort(xs: Array[Int], maxDepth: Int): Unit = {
+  sort(0, xs.length, 0)
+}
+
+def sort(from: Int, until: Int, depth: Int): Unit = {
+  if (depth == maxDepth) {
+    quickSort(xs, from, until - from)
+  } else {
+    val mid = (from + until) / 2
+    parallel(sort(mid, until, depth + 1), sort(from, mid, depth + 1))
+
+    val flip = (maxDepth - deplth) % 2 == 0
+    val src = if (flip) ys else xs
+    val dst = if (flip) xs else ys
+    merge(src, dst, from, mid, until)
+  }
+}
+
+def merge(src: Array[Int], dst: Array[Int],
+  from: Int, mid: Int, until: Int): Unit = {
+  ...
+}
+
+def copy(src: Array[Int], target: Array[Int],
+  from: Int, until: Int, depth: Int): Unit = {
+  if (depth == maxDepth) {
+    Array.copy(src, from, target, from, until - from)
+  } else {
+    val mid = (from + until) / 2
+    val right = parallel(
+      copy(src, target, mid, until, depth + 1),
+      copy(src, target, from, mid, depth + 1)
+    }
+  }
+}
 #+end_src scala
+** Data Operations and Parallel Mapping
+*** Parallelism and collections
+We examine conditions when this can be done
+- properties of collections: ability to split, combine
+- properties of operations: associativity, independence
+*** FP and collections
+#+begin_src scala
+List(1,3,8).map(x => x*x) == List(1,9,64)
+
+List(1,3,8).fold(100)((s,x) => s + x) == 112
+
+List(1,3,8).scan(100)((s,x) => s + x) == List(100, 101, 104, 112)
+#+end_src
+*** Choice of data structures
+We use *List* to specify the results of operations
+
+Lists are not good for parallel implementations because we cannot efficiently
+- split them in half (need to search for the middle)
+- combine them (concatenation needs linear time)
+We use for now these alternatives
+- *arrays*: imperative (recall array sum)
+- *trees*: can be implemented functionally
+Subsequent lecture examine Scala's parallel collection libraries
+- include many more data structures implemented efficiently
+*** Map: meaning and properties
+- src_scala{list.map(x => x) == list}
+- src_scala{list.map(f(g(x)) == list.map(g).map(f)}
+*** Parallel map of an array producing an array
+#+BEGIN_SRC scala
+def mapASegPar[A,B](inp: Array[A], left: Int, right: Int, f: A => B,
+  out: Array[B]): Unit = {
+  // writes to out(i) for left <= i <= right-1
+  if (right - left < threshold)
+    mapASegSeq(inp, left, right, f, out)
+  else {
+    val mid = left + (right - left)/2
+    parallel(mapASegPar(inp, left, mid, f, out),
+             mapASegPar(inp, mid, right, f, out))
+  }
+}
+#+END_SRC
+Note:
+- writes need to be disjoint (otherwise: non-deterministic behavior)
+- threshold needs to be large enough (otherwise we lose efficiency)
+*** Paralle map on immutable trees
+Consider trees where
+- leaves store array segments
+- non-leaf nodes stores number of elements
+#+BEGIN_SRC scala
+sealed abstract class Tree[A] { val size: Int }
+case class Leaf[A](a: Array[A]) extends Tree[A] {
+  override val size = a.size
+}
+case class Node[A](l: Tree[A], r: Tree[A]) extends Tree[A] {
+  override val size = l.size + r.size
+}
+#+END_SRC
+Assume that our trees are balanced: we can explore branches in parallel
+#+BEGIN_SRC scala
+def mapTreePar[A:Manifest, B:Manifest](t: Tree[A], f: A = > B) : Tree[B] = {
+  t match {
+    case Leaf(a) => {
+      val len = a.length; val b = new Array[B](len)
+      var i = 0
+      while (i < len) { b(i) = f(a(i)); i= i + 1 }
+      Leaf(b) }
+    case Node(l,r) => {
+      val(lb,rb) = parallel(mapTreePar(l,f), mapTreePar(r,f))
+      Node(lb, rb) }
+  }
+#+END_SRC
+Speedup and performance similar as for the array
+*** Comparison of arrays and immutable trees
+- Arrays
+-- (+) random access to elements, on shared memory can share array
+-- (+) good memory locality
+-- (-) imperative: must ensure parallel tasks write to disjoint parts
+-- (-) expensive to concatenate
+- Immutable trees
+-- (+) purely functional, produce new trees, keep old ones
+-- (+) no need to worry about disjointness of writes by parallel tasks
+-- (+) efficient to combine two trees
+-- (-) high memory allocation overhead
+-- (-) bad locality
+** Parallel Fold(Reduce) Operation
+The operation should be associative. (addition, string concatenation but not minus)
+*** Trees for expressions
+Each expression build from values connected with \otimes can be represented as a tree
+- leaves are the values
+- nodes are operation \otimes
+#+BEGIN_SRC scala
+def reduce[A](t: Tree[A], f: (A,A) => A): A = t match {
+  case Leaf(v) => v
+  case Node(l, r) => {
+    val (lV, rV) = parallel(reduce[A](l, f), reduce[A](r, f))
+    f(lV, rV)
+  }
+}
+#+END_SRC
+*** Parallel array reduce
+#+BEGIN_SRC scala
+def reduceSeg[A](inp: Array[A], left: Int, right: Int, f: (A,A) => A): A = {
+  if (right - left < threshold) {
+    var res = inp(left); var i = left + 1
+    while (i < right) { res = f(res, inp(i)); i = i+1 }
+    res
+  } else {
+  val mid = left + (right - left)/2 
+  val (lV, rV) = parallel(reduceSeg(A, left, mid, f),
+                          reduceSeg(A, mid, right, f))
+  f(lV, rV)
+  }
+}
+
+def reduce[A](inp: Array[A], f: (A,A0 => A):A =
+  reduceSeg(inp, 0, inp.length, f)
+#+END_SRC
+** Associativity
+*** Floating point addition is commutative but not associative
+#+BEGIN_SRC scala
+val e = 1e-200
+val x = 1e200
+val mx = -x
+
+scala> (x + mx) + e // Double = 1.0E-200
+scala> x + (mx + e) // Double = 0.0
+#+END_SRC
+*** Associative operations on tuples
+Suppose src_scala{f1: (A1,A1) => A1} and src_scala{f2: (A2,A2) => A2} are associative
+
+Then src_scala{f: ((A1,A2), (A1,A2)) => (A1,A2)} defined by
+
+src_scala{f((x1,x2), (y1,y2)) = (f1(x1,y1), f2(x2,y2))}
+
+is also associative.
+** Parallel Sacn (Prefix Sum) Operation
+*** Tree definitions
+Trees storing intermediate values also have (=res=) values in nodes:
+#+BEGIN_SRC scala
+sealed abstract class TreeRes[A] { val res: A }
+case class LeafRes[A](override val res: A) extends TreeRes[A]
+case class NodeRes[A](l: TreeRes[A],
+                      override val res: A,
+                      r: TreeRes[A]) extends TreeRes[A]
+#+END_SRC
+*** Reduce that preserves the computation tree
+#+BEGIN_SRC scala
+def reduceRes[A](t: Tree[A], f(A,A) => A): TreeRes[A] = {
+  case Leaf(v) => LeafRes(v)
+  case Node(l,r) => {
+    val (tL, tR) = (reduceRes(l, f), reduceRes(r, f) // this could be paralleled
+    NodeRes(tL, f(tL.res, tR.res), tR)
+  }
+}
+#+END_SRC
+*** Using tree with results to create the final collection
+#+BEGIN_SRC scala
+// 'a0' is reduce of all elements left of the tree 't'
+def downsweep[A](t: TreeRes[A], a0: A, f: (A,A) => A): Tree[A] = t match {
+  case LeafRes(a) => Leaf(f(a0, a))
+  case NodeRes(l, _, r) => {
+    val (tL, tR) = parallel(downsweep[A](l, a0, f),
+                            downsweep[A](r, f(a0, l.res), f))
+    Node(tL, tR) } }
+#+END_SRC
+*** scanLeft on trees
+#+BEGIN_SRC scala
+def scanLeft[A](t: Tree[A], a0: A, f: (A,A) => A): Tre[A] = {
+  val tRes = upsweep(t, f)
+  val scan1 = downsweep(tRes, a0, f)
+  prepend(a0, scan1)
+}
+
+def prepend[A](x: A, t: Tree[A]): Tree[A] = t match {
+  case Leaf(v) => Node(Leaf(x), Leaf(v))
+  case Node(l, r) => Node(prepend(x, l), r)
+}
+#+END_SRC
+*** Intermediate tree for array reduce
+* week 3 Data-Parallelism
+** Data-Parallel Programming
+*** Data-Parallel Programming Model
+The simplest form of data-parallel programming is the parallel =for= loop.
+*** Example: Mandelbrot Set
+Although simple, parallel =for= loop allows writing interesting programs.
+
+Render a set of complex numbers in the plane for which the sequence $z_{n+1}=z_n^2+c$ does not approach infinity.
+
+We approximate the definition of the Mandelbrot set - as long as the absolute value of z_n is less than 2, we compute z_{n+1} until we do =maxIterations=.
+#+BEGIN_SRC scala
+private def computePixel(xc: Double, yc: Double, maxIterations: Int): Int = {
+  var i = 0
+  var x, y = 0.0
+  while (x * x + y * y < 4 && i < maxIterations) {
+    val xt = x * x - y * y + xc
+    val yt = 2 * x * y + yc
+    x = xt; y = yt
+    i += 1
+  }
+  color(i)
+} 
+#+END_SRC
+How do we render the set using data-parallel programming?
+#+BEGIN_SRC scala
+def parRender(): Unit = {
+  for (idx <- (0 until image.length).par) {
+    val (xc, yc) = coordinatesFor(idx)
+    image(idx) = computePixel(xc, yc, maxIterations)
+  }
+}
+#+END_SRC
+Summary of the demo
+- task-parallel implementation -- the slowest
+- data-parallel implementation -- about 2x faster.
+*** Workload
+Different data-parallel programs have different workloads.
+
+/Workload/ is a function that maps each input element to the amount of work required to process it.
+
+- Uniform Workload :: Defined by a constant function: /w(i) = const/
+- Irregular Workload: Defined by an arbitrary function: /w(i) = f(i)/
+
+Goal of the /data-parallel scheduler/: efficiently balance the workload across processors without any knowledge about the /w(i)/.
+** Data-Parallel Operations
+*** Parallel Collections
+In Scala, most collection operations can become data-parallel.
+
+The =.par= call converts a sequential collection to a parallel collection.
+#+BEGIN_SRC scala
+(1 until 1000).par
+  .filter(n => n % 3 == 0)
+  .count(n => n.toString == n.toString.reverse)
+#+END_SRC
+However, some operations are not parallizeable.
+*** Non-Parallelizable Operations
+#+BEGIN_SRC scala
+def foldLeft[B](z: B)(f: (B, A) => B): B
+#+END_SRC
+
+Operations =foldRight=, =reduceLeft=, =reduceRight=, =scanLeft= and =scanRight= similarly must process the elements sequentially.
+*** The =fold= Operation
+src_scala{def fold(z: A)(f: (A, A) => A): A}
+
+The =fold= operation can process the elements in a reduction tree, so it can execute in parallel.
+*** Preconditons of the =fold= Operation
+In order for the =fold= opeartion to work correctly, the following relations must hold:
+#+BEGIN_SRC scala
+f(a, f(b, c)) == f(f(a, b), c)
+f(z, a) = f(a, z) == a
+#+END_SRC
+We say taht the neutral element =z= and the binary operator =f= must form a /monoid/.
+
+Commutativity does not matter for =fold= -- the following relations is not necessary:
+#+BEGIN_SRC scala
+f(a, b) == f(b, a)
+#+END_SRC
+*** Limitations of the =fold= Operation
+*** The =aggregate= Operation
+#+BEGIN_SRC scala
+def aggregate[B](z: B)(f: (B, A) => B, g: (B, B) => B): B
+#+END_SRC
+A combination of =foldLeft= and =fold=.
+*** Using the =aggregate= Operation
+Count the number of vowels in a character array:
+#+BEGIN_SRC scala
+Array('E', 'P', 'F', 'L').par.aggregate(0)(
+  (count, c) => if (isVowel(c)) count + 1 else count,
+  _ + _
+)
+#+END_SRC
+*** The Transformer Operations
+So far, we saw the /accessor/ combinators.
+
+/Transformer/ combinators, such as =map=, =filter=, =flatMap= and =groupBy=, do not return a single value, but instead return new collections as results.
+** Scala Parallel Collections
+*** Scala Collections Hierarchy
+- =Traversable[T]= -- collection of elements with type =T=, with operations implemented using =foreach=
+- =Iterable[T]= -- collection of elements with type =T=, with operations implemented using =iterator=
+- =Seq[T]=
+- =Set[T]=
+- =Map[K, V]=
+*** Parallel Collection Hierarchy
+Traits =ParIterable[T]=, =ParSeq[T]=, =ParSet[T]= and =ParMap[K, V]= are the parallel counterparts of different sequential traits.
+
+For code that is /agnostic/ about parallelism, there exists a separate hierachy of /generic/ collection traits =GenIterable[T]=, =GenSeq[T]=, =GenSet[T]= and =GenMap[K, V]=.
+
+[[./scala_collection_hierachy]]
+*** Writing Parallelism-Agnostic Code
+Generic collection traits allow us to write code that is unaware of parallelism.
+
+Example -- find the larget palindrome in the sequence:
+#+BEGIN_SRC scala
+def largestPalindrome(xs: GenSeq[Int]): Int= {
+  xs.aggregate(Int.MinValue)(
+    (largest, n) =>
+    if (n > largest && n.toString == n.toString.reverse) n else largest,
+    math.max
+  )
+}
+#+END_SRC
+*** Non-Parallelizable Collections
+A sequential collection can be converted into a parallel one by calling =par=. (the convert time varies, e.g list is cost more time to convert than vector)
+*** Parallelizable Collections
+- =ParArray[T]= -- parallel array of objects, counterpart of =Array= and =ArrayBuffer=
+- =ParRange=
+- =ParVecotr[T]=
+- =immutable.ParHashSet[T]=
+- =immutable.ParHashMap[K, V]=
+- =mutable.ParHashSet[T]=
+- =mutable.ParHashMap[K, V]=
+- =ParTrieMap[K, V]= -- thread-safe parallel map with atomic snapshots, counterpart of =TrieMap=
+- for other collections, =par= creates the closest parallel collection -- e.g. a =List= is converted to a =ParVector=
+***
+*** Synchronizing Side-Effects
+Solution -- use a concurrent collection, which can be mutated by multiple threads:
+#+BEGIN_SRC scala
+import java.util.concurrent._
+def intersection(a: GenSet[Int], b: GenSet[Int]) = {
+  val result = new ConcurrentSkipListSet[Int]()
+  for (x <- a) if (b contains x) result += x
+  result
+}
+#+END_SRC
+*** Avoiding Side-Effects
+*** Concurrent Modifications During Traversals
+*** The =TrieMap= Collection
+** Splitters and Combiners
+* week 4 Data Structures for Parallel Computing
+** Implementing Combiners
+How can we implement the =combine= method /efficiently/?
+*** Combiners
+- when =Repr= is a =set= or a =map=, =combine= represents =union=
+- when =Repr= is a sequence, =combine= represents concatenation
+The =combine= operation must be efficient, i.e. execute in /O(logn+logm)/ time.
+*** Array Concatenation
+Arrays cannot be efficiently concatenated.
+***
+*** Sequences
+** Parallel Two-phase Construction
+Most data structures can be constructed in parallel using /two-phase construction/.
+
+The /intermediate data structure/ is a data structure that:
+- has an efficent =combine= method - /O(logn + logm)/ or better
+- has an efficent += method
+- can be converted to the resulting data structure in /O(n/P)/ time
+*** Example: Array Combiner
+***
+***
+How can we implement combiners?
+1. Two-phase construction - the combiner uses an intermediate data structure with an efficient =combine= method to partition the elements. When =result= is called, the final data structure is constructed in parallel from the intermediate data structure.
+2. An efficient concatenation or union operation - a preferred way when the resulting data structure allow this.
+3. Concurrent data structure - different combiners share the same underlying data structure, and rely on /synchronization/ to correclty update the data structure when += is called.
+** Conc-tree Data Structure
+*** Conc Data Type
+Trees are not good for parallelism unless they are balanced.
+
+Let's device a data type called =Conc=, which represents balanced trees:
+#+BEGIN_SRC scala
+sealed trait Conc[+T] {
+  def level: Int
+  def size: Int
+  def left: Conc[T]
+  def right: Conc[T]
+}
+#+END_SRC
+In parallel programming, this data type is known as the =conc-list= (introduced in the Fortress language).
+*** 
+*** Conc Data Type Invariants
+In addition, we will define the following /invariants/ for Conc-trees:
+- A =<>= node can never contain =Empty= as its subtree.
+- The level difference between the left and the right subtree of a =<>= node is always 1 or less.
+** Amortized, Constant-time Append Operation
+** Conc-Tree Combiners
+***
+*** Counting in a Binary Number System
+*** Binary Number Representation
+- 0 digit corresponds to a missing tree
+- 1 digit corresponds to an existing tree
+*** Constant Time Appends in Conc-Trees
+#+BEGIN_SRC scala
+def appendLeaf[T](xs: Conc[T], ys:Single[T]): Conc[T] = xs match {
+  case Empty => ys
+  case xs: Single[T] => new <>(xs, ys)
+  case _ <> _ = new Append(xs, ys)
+  case xs: Append[T] => append(xs, ys)
+
+@tailrec private def append[T](xs: Append[T], ys: Conc[T]): Conc[T] = {
+  if (xs.right.level > ys.level) new Append(xs, ys)
+  else {
+    val zs = new <>(xs.right, ys)
+    xs.left match {
+      case ws @ Append(_, _) => append(ws, zs)
+      case ws if ws.level <= zs.level => ws <> zs
+      case ws => new Append(ws, zs)
+    }
+  }
+}
+#+END_SRC
+We have implemented an /immutable/ data structure with:
+- O(1) appends
+- O(logn) concatenation
+Next, we will see if we can implement a more efficient, /mutable/ data Conc-tree variant, which can implment a =Combiner=.
+** Conc-Tree Combiners
+*** Conc Buffers
+The =ConcBuffer= appends elements into an array of size /k/.
+
+When the array gets full, it is stored into a =Chunk= node and added into =Conc-tree=.
+
+#+BEGIN_SRC scala
+class ConcBuffer[T: ClassTag](val k: Int, private var conc: Conc[T]) {
+  private var chunk: Array[T] = new Array(k)
+  private var chunkSize: Int = 0
+
+  final def +=(elem: T): Unit = {
+    if (chunkSize >= k) expand()
+    chunk(chunkSize) = elem
+    chunkSize += 1
+  }
+  
+  class Chunk[T](val array: Array[T], val size: Int) extends Conc[T] {
+    def level = 0
+  }
+
+  private def expand() {
+    conc = appendLeaf(conc, new Chunk(chunk, chunkSize))
+    chunk = new Array(k)
+    chunkSize = 0
+  }
+
+  final def combine(that: ConcBuffer[T]): ConcBuffer[T] = {
+    val combineConc = this.result <> that.result
+    new ConcBuffer(k, combinedConc)
+  }
+
+  def result: Conc[T] = {
+    conc = appendLeaf(conc, new Conc.Chunk(chunk, chunkSize))
+    conc
+  }  
+#+END_SRC
